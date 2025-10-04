@@ -1,54 +1,81 @@
 export const siteConfig = {
   // Couple Information
   couple: {
-    name1: "João", // First person's name
-    name2: "Maria", // Second person's name
-    relationshipStart: "2021-09-29", // Date when the relationship started (YYYY-MM-DD)
-    engagementDate: "2024-09-29", // Date of engagement (YYYY-MM-DD)
+    name1: "Matheus", // First person's name
+    name2: "Sofia", // Second person's name
+    relationshipStart: "2022-10-11", // Date when the relationship started (YYYY-MM-DD)
+    engagementDate: "2024-10-11", // Date of engagement (YYYY-MM-DD)
   },
 
   // Spotify Integration
   spotify: {
     // Spotify track ID from the URL: https://open.spotify.com/track/TRACK_ID
-    trackId: "4iV5W9uYEdYUVa79Axb7Rh", // Example: "Perfect" by Ed Sheeran
-    // You can find the track ID by copying the Spotify song link and extracting the ID
+    trackId: "0t0wQ6xZspmsXXekHfRoDH", // Música personalizada do casal
   },
 
   // Website Content
   content: {
-    title: "Three Beautiful Years Together ❤️",
-    subtitle: "Celebrating our journey from dating to engagement",
+    title: "Três Anos Lindos Juntos ❤️",
+    subtitle: "Celebrando nossa jornada do namoro ao noivado",
     story: {
-      title: "Our Love Story",
+      title: "Nossa História de Amor",
       paragraphs: [
-        "Three years ago, our paths crossed and everything changed. What started as a beautiful friendship blossomed into the most incredible love story.",
-        "Through every season, every challenge, and every joy, we've grown stronger together. Our love has been the constant that makes everything else make sense.",
-        "Today, we celebrate not just three amazing years together, but also the beginning of our forever. Yes, we're engaged! 💍",
-        "Here's to many more years of adventures, laughter, love, and building our dreams together. Thank you for being my person, my best friend, and now my fiancé(e)."
+        "Três anos atrás, nossos caminhos se cruzaram e tudo mudou. O que começou como uma bela amizade floresceu na história de amor mais incrível.",
+        "Através de cada estação, cada desafio e cada alegria, crescemos mais fortes juntos. Nosso amor tem sido a constante que faz tudo mais fazer sentido.",
+        "Hoje celebramos não apenas três anos incríveis juntos, mas também o início do nosso para sempre. Sim, estamos noivos! 💍",
+        "Aqui está para muitos mais anos de aventuras, risadas, amor e construindo nossos sonhos juntos. Obrigado por ser minha pessoa, minha melhor amiga e agora minha noiva."
       ]
     },
     memories: {
-      title: "Our Favorite Memories",
+      title: "Nossas Memórias Favoritas",
       items: [
         {
-          title: "First Date",
-          description: "That magical evening when we both knew something special was beginning",
-          emoji: "🌹"
+          title: "Primeiro Encontro",
+          description: "Aquela noite mágica quando ambos sabíamos que algo especial estava começando",
+          emoji: "🌹",
+          image: "/images/image.jpg"
         },
         {
-          title: "First Trip Together",
-          description: "Exploring new places and creating unforgettable memories",
-          emoji: "✈️"
+          title: "Primeira Viagem Juntos",
+          description: "Explorando novos lugares e criando memórias inesquecíveis",
+          emoji: "✈️",
+          image: "/images/image2.jpg"
         },
         {
-          title: "Moving In Together",
-          description: "Making our house a home filled with love and laughter",
-          emoji: "🏠"
+          title: "Morando Juntos",
+          description: "Transformando nossa casa em um lar cheio de amor e risadas",
+          emoji: "🏠",
+          image: "/images/image3.jpg"
         },
         {
-          title: "The Proposal",
-          description: "The moment our forever officially began",
-          emoji: "💍"
+          title: "O Pedido",
+          description: "O momento em que nosso para sempre oficialmente começou",
+          emoji: "💍",
+          image: "/images/image4.jpg"
+        },
+        {
+          title: "Aniversários Especiais",
+          description: "Celebrando cada ano de amor e crescimento juntos",
+          emoji: "🎂",
+          image: "/images/image5.jpg"
+        },
+        {
+          title: "Momentos do Dia a Dia",
+          description: "As pequenas alegrias que fazem nossa vida especial",
+          emoji: "☕",
+          image: "/images/image6.jpg"
+        },
+        {
+          title: "Família e Amigos",
+          description: "Compartilhando nosso amor com as pessoas que mais amamos",
+          emoji: "👨‍👩‍👧‍👦",
+          image: "/images/image7.jpg"
+        },
+        {
+          title: "Sonhos Realizados",
+          description: "Cada conquista e sonho que realizamos juntos",
+          emoji: "⭐",
+          image: "/images/image8.jpg"
         }
       ]
     }
@@ -56,9 +83,11 @@ export const siteConfig = {
 
   // Styling
   theme: {
-    primaryColor: "#f43f5e", // Rose color for love theme
-    secondaryColor: "#ec4899", // Pink accent
-    backgroundColor: "#fdf2f8", // Light pink background
+    primaryColor: "#1db954", // Spotify green
+    secondaryColor: "#1ed760", // Spotify light green
+    backgroundColor: "#191414", // Spotify black
+    textColor: "#ffffff", // White text
+    secondaryTextColor: "#b3b3b3", // Spotify gray
   }
 };
 
