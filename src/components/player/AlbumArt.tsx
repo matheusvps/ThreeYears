@@ -25,6 +25,7 @@ export function AlbumArt({ src, alt, isPlaying }: AlbumArtProps) {
           className="w-full h-full object-cover rounded-lg shadow-2xl"
           placeholder="blur"
           blurDataURL={BLUR_DATA_URL}
+          priority
         />
         {isPlaying && (
           <motion.div

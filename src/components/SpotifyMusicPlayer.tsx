@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { CoupleInfoCard } from './CoupleInfoCard';
 import { SpecialMessage } from './SpecialMessage';
 import { PhotoGallery } from './PhotoGallery';
@@ -25,15 +25,17 @@ interface MusicTrack {
 interface SpotifyMusicPlayerProps {
   onBack: () => void;
   initialActiveTab?: 'home' | 'search' | 'library';
+  autoplay?: boolean;
 }
 
-export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: SpotifyMusicPlayerProps) {
+export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay = false }: SpotifyMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>(initialActiveTab);
+  const [trackDurations, setTrackDurations] = useState<Record<string, number>>({});
 
   // Depuração: logar mudanças de aba (apenas em dev)
   useEffect(() => {
@@ -70,8 +72,9 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
     }
   }, []);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const preloadAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const tracks: MusicTrack[] = [
+  const tracks: MusicTrack[] = useMemo(() => [
     {
       id: '1',
       title: 'O Meu Amor',
@@ -96,10 +99,16 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
       image: '/images/image3.jpg',
       duration: 240 // 4 minutos
     }
-  ];
+  ], []);
 
-  // Duração total do set
-  const totalDurationSec = tracks.reduce((sum, t) => sum + t.duration, 0);
+  // Duração total do set (preferir metadados reais quando disponíveis)
+  const totalDurationSec = useMemo(() => {
+    const anyReal = tracks.some(t => typeof trackDurations[t.id] === 'number' && !Number.isNaN(trackDurations[t.id]!));
+    if (anyReal) {
+      return tracks.reduce((sum, t) => sum + (trackDurations[t.id] ?? t.duration), 0);
+    }
+    return tracks.reduce((sum, t) => sum + t.duration, 0);
+  }, [tracks, trackDurations]);
 
   // Tempo global transcorrido somando faixas anteriores + tempo atual
   const globalTimeSec = tracks
@@ -143,19 +152,25 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
     }
   };
 
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
+  const handleTimeUpdate = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      setCurrentTime(audio.currentTime);
     }
-  };
+  }, []);
 
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
+  const handleLoadedMetadata = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      setDuration(audio.duration);
+      const id = tracks[currentTrack]?.id;
+      if (id && !Number.isNaN(audio.duration)) {
+        setTrackDurations(prev => ({ ...prev, [id]: Math.floor(audio.duration) }));
+      }
     }
-  };
+  }, [currentTrack, tracks]);
 
-  const handleEnded = () => {
+  const handleEnded = useCallback(() => {
     if (currentTrack < tracks.length - 1) {
       setCurrentTrack((prev) => prev + 1);
       setCurrentTime(0);
@@ -172,7 +187,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
       setIsPlaying(false);
       setCurrentTime(0);
     }
-  };
+  }, [currentTrack, tracks.length]);
 
   const toggleMute = () => {
     if (audioRef.current) {
@@ -183,32 +198,31 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (audio) {
+    if (!audio) return;
       audio.addEventListener('timeupdate', handleTimeUpdate);
       audio.addEventListener('loadedmetadata', handleLoadedMetadata);
       audio.addEventListener('ended', handleEnded);
       
-      // Autoplay na primeira música
-      const playAudio = async () => {
+    // Tentar tocar apenas se a página foi acessada a partir de gesto (autoplay sinalizado via rota)
+    const tryAutoplay = async () => {
+      if (!autoplay) return;
         try {
           await audio.play();
           setIsPlaying(true);
-        } catch (error) {
-          console.log('Autoplay bloqueado pelo navegador:', error);
+      } catch {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Autoplay foi bloqueado; aguardando interação do usuário.');
         }
-      };
-      
-      // Tentar tocar após um pequeno delay para garantir que o áudio carregou
-      const timer = setTimeout(playAudio, 500);
+      }
+    };
+    void tryAutoplay();
       
       return () => {
         audio.removeEventListener('timeupdate', handleTimeUpdate);
         audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
         audio.removeEventListener('ended', handleEnded);
-        clearTimeout(timer);
       };
-    }
-  }, []);
+  }, [autoplay, handleLoadedMetadata, handleTimeUpdate, handleEnded]);
 
   // Troca de faixa: resetar tempo e manter autoplay se já estava tocando
   useEffect(() => {
@@ -221,6 +235,28 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
   }, [currentTrack, isPlaying]);
 
   const currentTrackData = tracks[currentTrack];
+
+  // Preload da próxima faixa (metadados e cache)
+  useEffect(() => {
+    const nextIndex = currentTrack + 1;
+    if (nextIndex >= tracks.length) return;
+    if (!preloadAudioRef.current) {
+      preloadAudioRef.current = new Audio();
+    }
+    const pre = preloadAudioRef.current;
+    pre.preload = 'metadata';
+    pre.src = encodeURI(tracks[nextIndex].file);
+    const onMeta = () => {
+      const id = tracks[nextIndex].id;
+      if (!Number.isNaN(pre.duration)) {
+        setTrackDurations(prev => ({ ...prev, [id]: Math.floor(pre.duration) }));
+      }
+    };
+    pre.addEventListener('loadedmetadata', onMeta, { once: true });
+    return () => {
+      pre.removeEventListener('loadedmetadata', onMeta as EventListener);
+    };
+  }, [currentTrack, tracks]);
 
   return (
     <div className="bg-black w-full h-[100dvh] flex flex-col overflow-hidden">
@@ -301,7 +337,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
       {/* Audio Element */}
       <audio
         ref={audioRef}
-        src={currentTrackData.file}
+        src={encodeURI(currentTrackData.file)}
         preload="metadata"
       />
     </div>

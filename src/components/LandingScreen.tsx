@@ -46,7 +46,6 @@ export function LandingScreen({ onViewGift, onOpenSearch, onOpenLibrary }: Landi
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              console.log('[Landing] clique em Início (ver presente)');
               onViewGift();
             }}
             className="flex flex-col items-center space-y-1 text-gray-400 hover:text-white transition-colors"
@@ -61,7 +60,6 @@ export function LandingScreen({ onViewGift, onOpenSearch, onOpenLibrary }: Landi
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              console.log('[Landing] clique em Pesquisar');
               onOpenSearch();
             }}
             className="flex flex-col items-center space-y-1 text-white transition-colors"
@@ -76,7 +74,6 @@ export function LandingScreen({ onViewGift, onOpenSearch, onOpenLibrary }: Landi
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              console.log('[Landing] clique em Sua biblioteca');
               onOpenLibrary();
             }}
             className="flex flex-col items-center space-y-1 text-gray-400 hover:text-white transition-colors"
