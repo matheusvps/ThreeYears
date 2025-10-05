@@ -119,7 +119,8 @@ export function usePlaylists(photos: Photo[]) {
       color: 'from-rose-500 to-pink-600',
       photos: photos.filter(photo => 
         photo.title.toLowerCase().includes('unha') ||
-        photo.title.toLowerCase().includes('cuidado')
+        photo.title.toLowerCase().includes('cuidado') || 
+        photo.title.toLowerCase().includes('flores')
       )
     },
     {

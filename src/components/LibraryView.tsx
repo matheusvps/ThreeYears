@@ -110,16 +110,14 @@ export function LibraryView({ photos }: LibraryViewProps) {
             </p>
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto">
-            <div className="space-y-3">
-              {filteredPlaylists.map((playlist) => (
-                <PlaylistCard
-                  key={playlist.id}
-                  playlist={playlist}
-                  onClick={() => setSelectedPlaylist(playlist.id)}
-                />
-              ))}
-            </div>
+          <div className="space-y-3">
+            {filteredPlaylists.map((playlist) => (
+              <PlaylistCard
+                key={playlist.id}
+                playlist={playlist}
+                onClick={() => setSelectedPlaylist(playlist.id)}
+              />
+            ))}
           </div>
         )}
       </div>

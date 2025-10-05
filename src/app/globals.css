@@ -25,12 +25,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+html, body {
+  height: 100%;
+}
+
+body {
+  overflow: hidden; /* evita scroll global da página */
+}
+
 /* Container para desktop */
 .desktop-container {
   max-width: 480px;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100dvh; /* fixa na viewport */
   background: #000;
+  overflow: hidden; /* o scroll será interno aos componentes */
 }
 
 @media (min-width: 1024px) {

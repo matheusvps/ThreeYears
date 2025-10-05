@@ -38,6 +38,15 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
   const handleSetActiveTab = (tab: 'home' | 'search' | 'library') => {
     console.log('[Player] clicou no footer para alterar aba:', tab);
     setActiveTab(tab);
+    // Resetar scroll do conteúdo quando trocar de aba
+    const scrollContainers = document.querySelectorAll('.player-scroll');
+    scrollContainers.forEach((el) => {
+      try {
+        (el as HTMLElement).scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      } catch {
+        (el as HTMLElement).scrollTop = 0;
+      }
+    });
   };
 
   // Depuração global de clique
@@ -435,7 +444,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
   ];
 
   return (
-    <div className="min-h-screen bg-black w-full">
+    <div className="bg-black w-full h-[100dvh] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <motion.button
@@ -563,8 +572,8 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
         </div>
       </div>
 
-      {/* Conteúdo das abas */}
-      <div className="pb-20">
+      {/* Conteúdo das abas (scroll interno independente) */}
+      <div className="player-scroll flex-1 overflow-y-auto pb-24">
         {activeTab === 'home' && (
           <>
             <CoupleInfoCard />
@@ -603,7 +612,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50 pointer-events-auto" onMouseDown={() => console.log('[Footer] mousedown') }>
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-black border-t border-gray-800 z-50 pointer-events-auto" onMouseDown={() => console.log('[Footer] mousedown') }>
         <div className="flex justify-around items-center py-4 px-6">
           <motion.button
             whileHover={{ scale: 1.05 }}
