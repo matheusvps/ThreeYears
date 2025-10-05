@@ -10,7 +10,7 @@ interface PlaylistViewProps {
 }
 
 export function PlaylistView({ playlist, onBack }: PlaylistViewProps) {
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(0);
 
   return (
     <div className="min-h-screen bg-black">
@@ -36,11 +36,11 @@ export function PlaylistView({ playlist, onBack }: PlaylistViewProps) {
       <div className={`px-6 py-8 bg-gradient-to-br ${playlist.color} relative`}>
         <div className="flex items-end space-x-6">
           {/* Cover */}
-          <div className="w-48 h-48 rounded-lg shadow-2xl overflow-hidden">
+          <div className="w-48 h-48 rounded-lg shadow-2xl overflow-hidden bg-gray-900 flex items-center justify-center">
             <img
               src={playlist.coverImage}
               alt={playlist.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </div>
 
@@ -69,7 +69,7 @@ export function PlaylistView({ playlist, onBack }: PlaylistViewProps) {
                 <img
                   src={photo.image}
                   alt={photo.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-gray-900"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
                   <motion.div
@@ -108,7 +108,7 @@ export function PlaylistView({ playlist, onBack }: PlaylistViewProps) {
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-700">
                 <h3 className="text-white text-xl font-bold">
-                  {playlist.photos[selectedPhotoIndex]?.title}
+                  {playlist.photos[(selectedPhotoIndex ?? 0)]?.title}
                 </h3>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -125,18 +125,19 @@ export function PlaylistView({ playlist, onBack }: PlaylistViewProps) {
               {/* Image */}
               <div className="relative">
                 <img
-                  src={playlist.photos[selectedPhotoIndex]?.image || ''}
-                  alt={playlist.photos[selectedPhotoIndex]?.title || ''}
-                  className="w-full h-96 object-cover object-top"
+                  src={playlist.photos[(selectedPhotoIndex ?? 0)]?.image || ''}
+                  alt={playlist.photos[(selectedPhotoIndex ?? 0)]?.title || ''}
+                  className="w-full h-96 object-contain bg-black"
                 />
                 
                 {/* Navigation */}
                 {playlist.photos.length > 1 && (
                   <>
                     <button
-                      onClick={() => setSelectedPhotoIndex((prev) => 
-                        prev === 0 ? playlist.photos.length - 1 : prev - 1
-                      )}
+                      onClick={() => setSelectedPhotoIndex((prev) => {
+                        const current = (prev ?? 0);
+                        return current === 0 ? playlist.photos.length - 1 : current - 1;
+                      })}
                       className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
                     >
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -145,9 +146,10 @@ export function PlaylistView({ playlist, onBack }: PlaylistViewProps) {
                     </button>
                     
                     <button
-                      onClick={() => setSelectedPhotoIndex((prev) => 
-                        prev === playlist.photos.length - 1 ? 0 : prev + 1
-                      )}
+                      onClick={() => setSelectedPhotoIndex((prev) => {
+                        const current = (prev ?? 0);
+                        return current === playlist.photos.length - 1 ? 0 : current + 1;
+                      })}
                       className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
                     >
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -161,7 +163,7 @@ export function PlaylistView({ playlist, onBack }: PlaylistViewProps) {
               {/* Description */}
               <div className="p-4 border-t border-gray-700">
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  {playlist.photos[selectedPhotoIndex]?.description || 'Descrição não disponível'}
+                  {playlist.photos[(selectedPhotoIndex ?? 0)]?.description || 'Descrição não disponível'}
                 </p>
               </div>
             </motion.div>

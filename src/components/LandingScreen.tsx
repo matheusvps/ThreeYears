@@ -4,9 +4,11 @@ import { motion } from 'framer-motion';
 
 interface LandingScreenProps {
   onViewGift: () => void;
+  onOpenSearch: () => void;
+  onOpenLibrary: () => void;
 }
 
-export function LandingScreen({ onViewGift }: LandingScreenProps) {
+export function LandingScreen({ onViewGift, onOpenSearch, onOpenLibrary }: LandingScreenProps) {
   return (
     <div className="min-h-screen bg-black flex flex-col w-full">
       {/* Main Content */}
@@ -43,6 +45,10 @@ export function LandingScreen({ onViewGift }: LandingScreenProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              console.log('[Landing] clique em Início (ver presente)');
+              onViewGift();
+            }}
             className="flex flex-col items-center space-y-1 text-gray-400 hover:text-white transition-colors"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -54,6 +60,10 @@ export function LandingScreen({ onViewGift }: LandingScreenProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              console.log('[Landing] clique em Pesquisar');
+              onOpenSearch();
+            }}
             className="flex flex-col items-center space-y-1 text-white transition-colors"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -65,6 +75,10 @@ export function LandingScreen({ onViewGift }: LandingScreenProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              console.log('[Landing] clique em Sua biblioteca');
+              onOpenLibrary();
+            }}
             className="flex flex-col items-center space-y-1 text-gray-400 hover:text-white transition-colors"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">

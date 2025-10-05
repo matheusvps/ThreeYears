@@ -10,12 +10,14 @@ import Image from 'next/image';
 interface PhotoGalleryProps {
   isMuted: boolean;
   onToggleMute: () => void;
-  currentTime: number;
-  duration: number;
+  // Tempo global transcorrido no player (em segundos), somando faixas anteriores + tempo atual
+  globalTimeSec: number;
+  // Duração total do conjunto de músicas (em segundos)
+  totalDurationSec: number;
   isPlaying: boolean;
 }
 
-export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, isPlaying }: PhotoGalleryProps) {
+export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurationSec, isPlaying }: PhotoGalleryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
@@ -194,6 +196,85 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, isP
       image: "/images/image29.jpg",
       description: "Simplesmente nós dois, juntos e sorrindo - porque às vezes o mais bonito é a simplicidade de estar ao lado de quem amamos"
     }
+    ,
+    {
+      id: 30,
+      title: "Em Família com Dona Dora",
+      image: "/images/image30.jpg",
+      description: "Eu, Sofia, minha mãe, minha avó e dona Dora – um momento em família para guardar no coração"
+    },
+    {
+      id: 31,
+      title: "Viagem de Carro com Cacau",
+      image: "/images/image31.jpg",
+      description: "Nós dois e Cacau viajando de carro – estrada, risadas e companhia perfeita"
+    },
+    {
+      id: 32,
+      title: "Jogo do Coxa – Dupla Pé Quente",
+      image: "/images/image32.jpg",
+      description: "Fomos ao jogo do Coxa com meu sogro. O Coxa ganhou – dupla pé quente!"
+    },
+    {
+      id: 33,
+      title: "Nós Dois na Academia",
+      image: "/images/image33.jpg",
+      description: "Treinando juntos – motivação, parceria e saúde lado a lado"
+    },
+    {
+      id: 34,
+      title: "Com Meu Avô Ari",
+      image: "/images/image34.jpg",
+      description: "Nós dois e meu avô Ari – carinho, respeito e gerações juntas"
+    },
+    {
+      id: 35,
+      title: "Família na Bahia",
+      image: "/images/image35.jpg",
+      description: "Nós dois e minha família na Bahia: meu avô Jonas, Gustavo e Louise (sobrinhos), meu pai, meu tio da Suíça e minha prima"
+    },
+    {
+      id: 36,
+      title: "Deitados com Cacau no Meio",
+      image: "/images/image36.jpg",
+      description: "Nós dois deitados e Cacau enfiada no meio – cena clássica do nosso trio"
+    },
+    {
+      id: 37,
+      title: "Flores Para Ela",
+      image: "/images/image37.jpg",
+      description: "Ela recebendo as flores que enviei – gesto simples, significado enorme"
+    },
+    {
+      id: 38,
+      title: "Primeira Mensagem – Pokémon Go",
+      image: "/images/image38.jpg",
+      description: "Primeiras mensagens no Instagram – começando a conversa falando sobre Pokémon Go"
+    },
+    {
+      id: 39,
+      title: "11/10 – Depois do Primeiro Encontro",
+      image: "/images/image39.jpg",
+      description: "Mensagens do dia 11/10, depois do nosso primeiro encontro – borboletas e sorrisos"
+    },
+    {
+      id: 40,
+      title: "Melhores Amigos? Quero Para Todos!",
+      image: "/images/image40.jpg",
+      description: "Quando postei uma foto dela só nos melhores amigos e ela cobrou que fosse para todos verem"
+    },
+    {
+      id: 41,
+      title: "Choque de Realidade – Baiano em Curitiba",
+      image: "/images/image41.jpg",
+      description: "Ela descobrindo que eu não era de Curitiba e sim baiano – 14 de setembro"
+    },
+    {
+      id: 42,
+      title: "Seis Meses de Namoro",
+      image: "/images/image42.jpg",
+      description: "Nossa comemoração de seis meses de namoro – amor que só cresceu desde então"
+    }
   ], []);
 
   // Hook de pesquisa
@@ -217,23 +298,18 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, isP
     }
   }, [displayPhotos.length, currentPhotoIndex]);
 
-  // Sincronizar fotos com o progresso da música
+  // Sincronizar fotos com o progresso global (todas as músicas)
   useEffect(() => {
-    if (isPlaying && duration > 0 && !isSearching) {
-      // Calcular qual foto deve ser exibida baseada no tempo atual
+    if (isPlaying && totalDurationSec > 0 && !isSearching) {
       const totalPhotos = displayPhotos.length;
-      const timePerPhoto = duration / totalPhotos;
-      const photoIndex = Math.floor(currentTime / timePerPhoto);
-      
-      // Garantir que o índice esteja dentro dos limites
+      const clampedGlobal = Math.max(0, Math.min(globalTimeSec, totalDurationSec));
+      const photoIndex = Math.floor((clampedGlobal / totalDurationSec) * totalPhotos);
       const validIndex = Math.min(photoIndex, totalPhotos - 1);
-      
-      // Só atualizar se o índice realmente mudou e se não estamos no modal
       if (validIndex !== currentPhotoIndex && !isOpen) {
         setCurrentPhotoIndex(validIndex);
       }
     }
-  }, [currentTime, duration, isPlaying, displayPhotos.length, currentPhotoIndex, isOpen, isSearching]);
+  }, [globalTimeSec, totalDurationSec, isPlaying, displayPhotos.length, currentPhotoIndex, isOpen, isSearching]);
 
   const nextPhoto = useCallback(() => {
     if (displayPhotos.length > 0) {
@@ -291,6 +367,26 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, isP
               startSearch();
             }}
           />
+        </div>
+
+        {/* Tabs rápidas de temas (sugestões clicáveis) */}
+        <div className="mb-6">
+          <div className="flex space-x-2 overflow-x-auto">
+            {['Viagem', 'Família', 'Casa', 'Pets', 'Romance', 'Celebração'].map((tag) => (
+              <motion.button
+                key={tag}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setSearchQuery(tag.toLowerCase());
+                  startSearch();
+                }}
+                className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap"
+              >
+                {tag}
+              </motion.button>
+            ))}
+          </div>
         </div>
         
         {displayPhotos.length === 0 && isSearching ? (
@@ -439,15 +535,15 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, isP
                 </div>
               </div>
 
-              {/* Imagem principal */}
-              <div className="relative h-96">
+              {/* Imagem principal (sem cortes: object-contain) */}
+              <div className="relative h-96 bg-black flex items-center justify-center">
                 {displayPhotos[currentPhotoIndex]?.image ? (
                   <Image
                     src={displayPhotos[currentPhotoIndex].image}
                     alt={displayPhotos[currentPhotoIndex].title || ''}
                     fill
                     sizes="(max-width: 1024px) 100vw, 100vw"
-                    className="object-cover object-top"
+                    className="object-contain"
                   />
                 ) : (
                   <div className="w-full h-96 bg-gray-800 flex items-center justify-center">
@@ -507,7 +603,7 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, isP
                           alt={photo.title}
                           width={100}
                           height={100}
-                          className="w-full h-full object-cover object-top"
+                          className="w-full h-full object-contain bg-gray-800"
                         />
                         {index === currentPhotoIndex && (
                           <div className="absolute inset-0 bg-green-500 bg-opacity-30 flex items-center justify-center">

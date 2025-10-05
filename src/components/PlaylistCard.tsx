@@ -18,11 +18,13 @@ export function PlaylistCard({ playlist, onClick }: PlaylistCardProps) {
     >
       <div className="flex items-center space-x-4">
         {/* Cover Image */}
-        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900">
           <Image
             src={playlist.coverImage}
             alt={playlist.title}
-            className="w-full h-full object-cover"
+            width={100}
+            height={100}
+            className="w-full h-full object-contain"
           />
           <div className={`absolute inset-0 bg-gradient-to-br ${playlist.color} opacity-20`} />
         </div>

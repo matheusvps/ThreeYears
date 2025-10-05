@@ -7,7 +7,7 @@ import { SpecialMessage } from './SpecialMessage';
 import { PhotoGallery } from './PhotoGallery';
 import { LibraryView } from './LibraryView';
 import { Photo } from '@/hooks/useSearch';
-
+import Image from 'next/image';
 interface MusicTrack {
   id: string;
   title: string;
@@ -19,15 +19,36 @@ interface MusicTrack {
 
 interface SpotifyMusicPlayerProps {
   onBack: () => void;
+  initialActiveTab?: 'home' | 'search' | 'library';
 }
 
-export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
+export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: SpotifyMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>(initialActiveTab);
+
+  // Depuração: logar mudanças de aba
+  useEffect(() => {
+    console.log('[Player] activeTab mudou para:', activeTab);
+  }, [activeTab]);
+
+  const handleSetActiveTab = (tab: 'home' | 'search' | 'library') => {
+    console.log('[Player] clicou no footer para alterar aba:', tab);
+    setActiveTab(tab);
+  };
+
+  // Depuração global de clique
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      console.log('[Global Click]', { tag: target?.tagName, classes: target?.className });
+    };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, []);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const tracks: MusicTrack[] = [
@@ -56,6 +77,14 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
       duration: 240 // 4 minutos
     }
   ];
+
+  // Duração total do set
+  const totalDurationSec = tracks.reduce((sum, t) => sum + t.duration, 0);
+
+  // Tempo global transcorrido somando faixas anteriores + tempo atual
+  const globalTimeSec = tracks
+    .slice(0, currentTrack)
+    .reduce((sum, t) => sum + t.duration, 0) + currentTime;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -324,6 +353,84 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
       title: "Juntos e Sorrindo",
       image: "/images/image29.jpg",
       description: "Simplesmente nós dois, juntos e sorrindo - porque às vezes o mais bonito é a simplicidade de estar ao lado de quem amamos"
+    },
+    {
+      id: 30,
+      title: "Em Família com Dona Dora",
+      image: "/images/image30.jpg",
+      description: "Eu, Sofia, minha mãe, minha avó e dona Dora – um momento em família para guardar no coração"
+    },
+    {
+      id: 31,
+      title: "Viagem de Carro com Cacau",
+      image: "/images/image31.jpg",
+      description: "Nós dois e Cacau viajando de carro – estrada, risadas e companhia perfeita"
+    },
+    {
+      id: 32,
+      title: "Jogo do Coxa – Dupla Pé Quente",
+      image: "/images/image32.jpg",
+      description: "Fomos ao jogo do Coxa com meu sogro. O Coxa ganhou – dupla pé quente!"
+    },
+    {
+      id: 33,
+      title: "Nós Dois na Academia",
+      image: "/images/image33.jpg",
+      description: "Treinando juntos – motivação, parceria e saúde lado a lado"
+    },
+    {
+      id: 34,
+      title: "Com Meu Avô Ari",
+      image: "/images/image34.jpg",
+      description: "Nós dois e meu avô Ari – carinho, respeito e gerações juntas"
+    },
+    {
+      id: 35,
+      title: "Família na Bahia",
+      image: "/images/image35.jpg",
+      description: "Nós dois e minha família na Bahia: meu avô Jonas, Gustavo e Louise (sobrinhos), meu pai, meu tio da Suíça e minha prima"
+    },
+    {
+      id: 36,
+      title: "Deitados com Cacau no Meio",
+      image: "/images/image36.jpg",
+      description: "Nós dois deitados e Cacau enfiada no meio – cena clássica do nosso trio"
+    },
+    {
+      id: 37,
+      title: "Flores Para Ela",
+      image: "/images/image37.jpg",
+      description: "Ela recebendo as flores que enviei – gesto simples, significado enorme"
+    },
+    {
+      id: 38,
+      title: "Primeira Mensagem – Pokémon Go",
+      image: "/images/image38.jpg",
+      description: "Primeiras mensagens no Instagram – começando a conversa falando sobre Pokémon Go"
+    },
+    {
+      id: 39,
+      title: "11/10 – Depois do Primeiro Encontro",
+      image: "/images/image39.jpg",
+      description: "Mensagens do dia 11/10, depois do nosso primeiro encontro – borboletas e sorrisos"
+    },
+    {
+      id: 40,
+      title: "Melhores Amigos? Quero Para Todos!",
+      image: "/images/image40.jpg",
+      description: "Quando postei uma foto dela só nos melhores amigos e ela cobrou que fosse para todos verem"
+    },
+    {
+      id: 41,
+      title: "Choque de Realidade – Baiano em Curitiba",
+      image: "/images/image41.jpg",
+      description: "Ela descobrindo que eu não era de Curitiba e sim baiano – 14 de setembro"
+    },
+    {
+      id: 42,
+      title: "Seis Meses de Namoro",
+      image: "/images/image42.jpg",
+      description: "Nossa comemoração de seis meses de namoro – amor que só cresceu desde então"
     }
   ];
 
@@ -355,9 +462,11 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
           transition={{ duration: 0.5 }}
           className="w-64 h-64 relative max-w-sm"
         >
-          <img
+          <Image
             src={currentTrackData.image}
             alt={currentTrackData.title}
+            width={100}
+            height={100}
             className="w-full h-full object-cover rounded-lg shadow-2xl"
           />
           {isPlaying && (
@@ -463,8 +572,8 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
             <PhotoGallery 
               isMuted={isMuted} 
               onToggleMute={toggleMute}
-              currentTime={currentTime}
-              duration={duration}
+              globalTimeSec={globalTimeSec}
+              totalDurationSec={totalDurationSec}
               isPlaying={isPlaying}
             />
           </>
@@ -481,8 +590,8 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
             <PhotoGallery 
               isMuted={isMuted} 
               onToggleMute={toggleMute}
-              currentTime={currentTime}
-              duration={duration}
+              globalTimeSec={globalTimeSec}
+              totalDurationSec={totalDurationSec}
               isPlaying={isPlaying}
             />
           </div>
@@ -494,12 +603,12 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50 pointer-events-auto" onMouseDown={() => console.log('[Footer] mousedown') }>
         <div className="flex justify-around items-center py-4 px-6">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveTab('home')}
+            onClick={() => handleSetActiveTab('home')}
             className={`flex flex-col items-center space-y-1 transition-colors ${
               activeTab === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'
             }`}
@@ -513,7 +622,7 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveTab('search')}
+            onClick={() => handleSetActiveTab('search')}
             className={`flex flex-col items-center space-y-1 transition-colors ${
               activeTab === 'search' ? 'text-white' : 'text-gray-400 hover:text-white'
             }`}
@@ -527,7 +636,7 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveTab('library')}
+            onClick={() => handleSetActiveTab('library')}
             className={`flex flex-col items-center space-y-1 transition-colors ${
               activeTab === 'library' ? 'text-white' : 'text-gray-400 hover:text-white'
             }`}
