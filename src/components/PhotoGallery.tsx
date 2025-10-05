@@ -8,6 +8,7 @@ import { Photo } from '@/types/media';
 import { photos as sharedPhotos } from '@/data/photos';
 import { SearchBar } from './SearchBar';
 import Image from 'next/image';
+import { BLUR_DATA_URL } from '@/lib/images';
 
 interface PhotoGalleryProps {
   isMuted: boolean;
@@ -174,6 +175,8 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
                 fill
                 sizes="33vw"
                 className="object-cover object-top"
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                 <p className="text-white text-sm font-medium">{photo.title}</p>
@@ -295,6 +298,8 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
                     fill
                     sizes="(max-width: 1024px) 100vw, 100vw"
                     className="object-contain"
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
                   />
                 ) : (
                   <div className="w-full h-96 bg-gray-800 flex items-center justify-center">
@@ -355,6 +360,8 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
                           width={100}
                           height={100}
                           className="w-full h-full object-contain bg-gray-800"
+                          placeholder="blur"
+                          blurDataURL={BLUR_DATA_URL}
                         />
                         {index === currentPhotoIndex && (
                           <div className="absolute inset-0 bg-green-500 bg-opacity-30 flex items-center justify-center">
