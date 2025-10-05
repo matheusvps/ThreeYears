@@ -3,9 +3,5 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "functions": {
-    "app/**/*.tsx": {
-      "runtime": "@vercel/node@20.0.0"
-    }
-  }
+  "functions": {}
 }

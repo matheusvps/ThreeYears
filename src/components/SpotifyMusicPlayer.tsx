@@ -6,7 +6,8 @@ import { CoupleInfoCard } from './CoupleInfoCard';
 import { SpecialMessage } from './SpecialMessage';
 import { PhotoGallery } from './PhotoGallery';
 import { LibraryView } from './LibraryView';
-import { Photo } from '@/hooks/useSearch';
+import { Photo } from '@/types/media';
+import { photos as sharedPhotos } from '@/data/photos';
 import Image from 'next/image';
 interface MusicTrack {
   id: string;
@@ -30,13 +31,17 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
   const [isMuted, setIsMuted] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>(initialActiveTab);
 
-  // Depuração: logar mudanças de aba
+  // Depuração: logar mudanças de aba (apenas em dev)
   useEffect(() => {
-    console.log('[Player] activeTab mudou para:', activeTab);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Player] activeTab mudou para:', activeTab);
+    }
   }, [activeTab]);
 
   const handleSetActiveTab = (tab: 'home' | 'search' | 'library') => {
-    console.log('[Player] clicou no footer para alterar aba:', tab);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Player] clicou no footer para alterar aba:', tab);
+    }
     setActiveTab(tab);
     // Resetar scroll do conteúdo quando trocar de aba
     const scrollContainers = document.querySelectorAll('.player-scroll');
@@ -49,14 +54,16 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
     });
   };
 
-  // Depuração global de clique
+  // Depuração global de clique (apenas em dev)
   useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      console.log('[Global Click]', { tag: target?.tagName, classes: target?.className });
-    };
-    document.addEventListener('click', onDocClick);
-    return () => document.removeEventListener('click', onDocClick);
+    if (process.env.NODE_ENV !== 'production') {
+      const onDocClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        console.log('[Global Click]', { tag: target?.tagName, classes: target?.className });
+      };
+      document.addEventListener('click', onDocClick);
+      return () => document.removeEventListener('click', onDocClick);
+    }
   }, []);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -145,8 +152,22 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
   };
 
   const handleEnded = () => {
-    setIsPlaying(false);
-    setCurrentTime(0);
+    if (currentTrack < tracks.length - 1) {
+      setCurrentTrack((prev) => prev + 1);
+      setCurrentTime(0);
+      // auto play next track se já estava tocando
+      const audio = audioRef.current;
+      if (audio) {
+        // play ocorrerá após o src trocar no render; garantir async
+        setTimeout(() => {
+          audio.play().catch(() => {});
+          setIsPlaying(true);
+        }, 0);
+      }
+    } else {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    }
   };
 
   const toggleMute = () => {
@@ -184,6 +205,16 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
       };
     }
   }, []);
+
+  // Troca de faixa: resetar tempo e manter autoplay se já estava tocando
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    if (isPlaying) {
+      audio.play().catch(() => {});
+    }
+  }, [currentTrack]);
 
   const currentTrackData = tracks[currentTrack];
 
@@ -515,8 +546,12 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
               value={currentTime}
               onChange={handleSeek}
               className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+              aria-label="Progresso da faixa"
               style={{
-                background: `linear-gradient(to right, #1db954 0%, #1db954 ${(currentTime / duration) * 100}%, #4a4a4a ${(currentTime / duration) * 100}%, #4a4a4a 100%)`
+                background: (() => {
+                  const percent = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0;
+                  return `linear-gradient(to right, #1db954 0%, #1db954 ${percent}%, #4a4a4a ${percent}%, #4a4a4a 100%)`;
+                })()
               }}
             />
           </div>
@@ -535,6 +570,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
             onClick={handlePrevious}
             disabled={currentTrack === 0}
             className="text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            aria-label="Faixa anterior"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
@@ -546,6 +582,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
             whileTap={{ scale: 0.9 }}
             onClick={handlePlayPause}
             className="bg-white text-black rounded-full p-4 hover:scale-105 transition-transform"
+            aria-label={isPlaying ? 'Pausar' : 'Tocar'}
           >
             {isPlaying ? (
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -564,6 +601,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
             onClick={handleNext}
             disabled={currentTrack === tracks.length - 1}
             className="text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            aria-label="Próxima faixa"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
@@ -607,12 +645,12 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
         )}
         
         {activeTab === 'library' && (
-          <LibraryView photos={photos} />
+          <LibraryView photos={sharedPhotos as Photo[]} />
         )}
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-black border-t border-gray-800 z-50 pointer-events-auto" onMouseDown={() => console.log('[Footer] mousedown') }>
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-black border-t border-gray-800 z-50 pointer-events-auto" onMouseDown={() => { if (process.env.NODE_ENV !== 'production') console.log('[Footer] mousedown'); } }>
         <div className="flex justify-around items-center py-4 px-6">
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -621,6 +659,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
             className={`flex flex-col items-center space-y-1 transition-colors ${
               activeTab === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'
             }`}
+            aria-label="Aba Início"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
@@ -635,6 +674,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
             className={`flex flex-col items-center space-y-1 transition-colors ${
               activeTab === 'search' ? 'text-white' : 'text-gray-400 hover:text-white'
             }`}
+            aria-label="Aba Pesquisar"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -649,6 +689,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home' }: Spotif
             className={`flex flex-col items-center space-y-1 transition-colors ${
               activeTab === 'library' ? 'text-white' : 'text-gray-400 hover:text-white'
             }`}
+            aria-label="Aba Sua biblioteca"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>

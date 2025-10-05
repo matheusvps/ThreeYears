@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { usePlaylists } from '@/hooks/usePlaylists';
 import { PlaylistCard } from './PlaylistCard';
 import { PlaylistView } from './PlaylistView';
-import { Photo } from '@/hooks/useSearch';
+import { Photo } from '@/types/media';
 
 interface LibraryViewProps {
   photos: Photo[];
@@ -14,14 +14,23 @@ interface LibraryViewProps {
 export function LibraryView({ photos }: LibraryViewProps) {
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<string>('Todas');
   const { playlists, getPlaylistById } = usePlaylists(photos);
 
   // Filtrar playlists baseado na pesquisa
-  const filteredPlaylists = playlists.filter(playlist =>
-    playlist.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    playlist.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    playlist.theme.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPlaylists = playlists.filter(playlist => {
+    const matchesSearch =
+      playlist.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      playlist.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      playlist.theme.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = activeFilter === 'Todas' ||
+      (activeFilter === 'Viagens' && playlist.theme === 'viagem') ||
+      (activeFilter === 'Celebrações' && playlist.theme === 'celebração') ||
+      (activeFilter === 'Pets' && playlist.theme === 'pets') ||
+      (activeFilter === 'Romance' && playlist.theme === 'romance') ||
+      (activeFilter === 'Casa' && playlist.theme === 'casa');
+    return matchesSearch && matchesFilter;
+  });
 
   if (selectedPlaylist) {
     const playlist = getPlaylistById(selectedPlaylist);
@@ -85,7 +94,11 @@ export function LibraryView({ photos }: LibraryViewProps) {
               key={filter}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap"
+              onClick={() => setActiveFilter(filter)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                activeFilter === filter ? 'bg-green-600 text-white' : 'bg-gray-800 hover:bg-gray-700 text-white'
+              }`}
+              aria-pressed={activeFilter === filter}
             >
               {filter}
             </motion.button>
