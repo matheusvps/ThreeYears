@@ -73,13 +73,9 @@ teu nêgo. 🤍`;
 
             {/* Message Content */}
             <div className="flex-1 flex flex-col my-2 sm:my-4 font-extrabold leading-tight min-h-0 overflow-hidden relative">
-              <div 
-                className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#4597c9] to-transparent pointer-events-none z-10"
-                style={{ display: 'block' }}
-              ></div>
               <div className="flex-1 flex overflow-hidden h-full">
                 <div 
-                  className="w-full overflow-y-auto spotify-text-renderer flex-1 touch-auto overscroll-contain break-words whitespace-pre-wrap"
+                  className="w-full overflow-y-auto spotify-text-renderer flex-1 touch-auto overscroll-contain break-words whitespace-pre-wrap pb-6"
                   style={{
                     fontSize: '28px',
                     fontWeight: '700',
@@ -98,9 +94,9 @@ teu nêgo. 🤍`;
                   {message}
                 </div>
                 <div 
-                  className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+                  className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
                   style={{ 
-                    background: 'linear-gradient(rgba(69, 151, 201, 0) 0%, rgba(69, 151, 201, 0.7) 80%, rgba(69, 151, 201, 0.95) 100%)',
+                    background: 'linear-gradient(rgba(69, 151, 201, 0) 0%, rgba(69, 151, 201, 0.6) 60%, rgba(69, 151, 201, 0.9) 100%)',
                     zIndex: 5
                   }}
                 ></div>
@@ -144,7 +140,7 @@ teu nêgo. 🤍`;
               style={{ color: 'rgb(0, 0, 0)' }}
             >
               <div 
-                className="break-words whitespace-pre-wrap"
+                className="break-words whitespace-pre-wrap pb-6"
                 style={{
                   overflowWrap: 'break-word',
                   wordBreak: 'break-word',
@@ -155,9 +151,9 @@ teu nêgo. 🤍`;
                 {message}
               </div>
               <div 
-                className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+                className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
                 style={{ 
-                  background: 'linear-gradient(rgba(69, 151, 201, 0) 0%, rgba(69, 151, 201, 0.7) 80%, rgba(69, 151, 201, 0.95) 100%)'
+                  background: 'linear-gradient(rgba(69, 151, 201, 0) 0%, rgba(69, 151, 201, 0.6) 60%, rgba(69, 151, 201, 0.9) 100%)'
                 }}
               ></div>
             </div>

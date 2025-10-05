@@ -14,7 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased font-sans">
-        {children}
+        <div className="desktop-container">
+          {children}
+        </div>
       </body>
     </html>
   );

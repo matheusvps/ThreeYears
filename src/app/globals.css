@@ -25,6 +25,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Container para desktop */
+.desktop-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #000;
+}
+
+@media (min-width: 1024px) {
+  .desktop-container {
+    max-width: 480px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+}
+
 /* Custom slider styles for Spotify-like progress bar */
 .slider {
   -webkit-appearance: none;
@@ -61,4 +76,53 @@ body {
 
 .slider::-moz-range-track {
   background: transparent;
+}
+
+/* Custom scrollbar styles - Spotify-like */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 0;
+  border: none;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+/* Custom scrollbar for specific elements */
+.spotify-text-renderer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.spotify-text-renderer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.spotify-text-renderer::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 0;
+}
+
+.spotify-text-renderer::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

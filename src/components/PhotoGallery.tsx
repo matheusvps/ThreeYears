@@ -3,21 +3,23 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { siteConfig } from '@/config/site';
+import { useSearch, Photo } from '@/hooks/useSearch';
+import { SearchBar } from './SearchBar';
+import Image from 'next/image';
 
 interface PhotoGalleryProps {
   isMuted: boolean;
   onToggleMute: () => void;
   currentTime: number;
   duration: number;
-  currentTrack: number;
   isPlaying: boolean;
 }
 
-export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, currentTrack, isPlaying }: PhotoGalleryProps) {
+export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, isPlaying }: PhotoGalleryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
-  const photos = useMemo(() => [
+  const photos: Photo[] = useMemo(() => [
     {
       id: 1,
       title: "São João 2025",
@@ -194,11 +196,32 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, cur
     }
   ], []);
 
+  // Hook de pesquisa
+  const {
+    searchQuery,
+    setSearchQuery,
+    isSearching,
+    startSearch,
+    clearSearch,
+    filteredPhotos,
+    suggestions
+  } = useSearch(photos);
+
+  // Usar fotos filtradas ou todas as fotos
+  const displayPhotos = isSearching ? filteredPhotos : photos;
+
+  // Resetar índice quando as fotos filtradas mudarem
+  useEffect(() => {
+    if (displayPhotos.length > 0 && currentPhotoIndex >= displayPhotos.length) {
+      setCurrentPhotoIndex(0);
+    }
+  }, [displayPhotos.length, currentPhotoIndex]);
+
   // Sincronizar fotos com o progresso da música
   useEffect(() => {
-    if (isPlaying && duration > 0) {
+    if (isPlaying && duration > 0 && !isSearching) {
       // Calcular qual foto deve ser exibida baseada no tempo atual
-      const totalPhotos = photos.length;
+      const totalPhotos = displayPhotos.length;
       const timePerPhoto = duration / totalPhotos;
       const photoIndex = Math.floor(currentTime / timePerPhoto);
       
@@ -210,30 +233,39 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, cur
         setCurrentPhotoIndex(validIndex);
       }
     }
-  }, [currentTime, duration, isPlaying, photos.length, currentPhotoIndex, isOpen]);
+  }, [currentTime, duration, isPlaying, displayPhotos.length, currentPhotoIndex, isOpen, isSearching]);
 
   const nextPhoto = useCallback(() => {
-    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
-  }, [photos.length]);
+    if (displayPhotos.length > 0) {
+      setCurrentPhotoIndex((prev) => (prev + 1) % displayPhotos.length);
+    }
+  }, [displayPhotos.length]);
 
   const prevPhoto = useCallback(() => {
-    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
-  }, [photos.length]);
+    if (displayPhotos.length > 0) {
+      setCurrentPhotoIndex((prev) => (prev - 1 + displayPhotos.length) % displayPhotos.length);
+    }
+  }, [displayPhotos.length]);
 
   const downloadPhoto = useCallback(() => {
-    const link = document.createElement('a');
-    link.href = photos[currentPhotoIndex].image;
-    link.download = `${photos[currentPhotoIndex].title}.jpg`;
-    link.click();
-  }, [photos, currentPhotoIndex]);
+    const currentPhoto = displayPhotos[currentPhotoIndex];
+    if (currentPhoto?.image) {
+      const link = document.createElement('a');
+      link.href = currentPhoto.image;
+      link.download = `${currentPhoto.title}.jpg`;
+      link.click();
+    }
+  }, [displayPhotos, currentPhotoIndex]);
 
   return (
     <>
       {/* Card de abertura da galeria */}
       <div className="rounded-2xl p-6 mx-4 mb-4" style={{ backgroundColor: 'rgb(51 47 47)' }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white text-xl font-bold">Conheça {siteConfig.couple.name1} e {siteConfig.couple.name2}</h2>
-          {isPlaying && (
+          <h2 className="text-white text-xl font-bold">
+            {isSearching ? `Resultados (${displayPhotos.length})` : `Conheça ${siteConfig.couple.name1} e ${siteConfig.couple.name2}`}
+          </h2>
+          {isPlaying && !isSearching && (
             <div className="flex items-center space-x-2 text-green-500">
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
@@ -244,9 +276,44 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, cur
             </div>
           )}
         </div>
+
+        {/* Barra de pesquisa */}
+        <div className="mb-6">
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            suggestions={suggestions}
+            isSearching={isSearching}
+            onStartSearch={startSearch}
+            onClearSearch={clearSearch}
+            onSuggestionClick={(suggestion) => {
+              setSearchQuery(suggestion);
+              startSearch();
+            }}
+          />
+        </div>
         
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          {photos.slice(0, 3).map((photo, index) => (
+        {displayPhotos.length === 0 && isSearching ? (
+          <div className="text-center py-8">
+            <div className="text-gray-400 mb-4">
+              <svg className="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+            </div>
+            <h3 className="text-white text-lg font-semibold mb-2">Nenhuma foto encontrada</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Tente pesquisar por palavras diferentes como &quot;viagem&quot;, &quot;família&quot;, &quot;casa&quot;, etc.
+            </p>
+            <button
+              onClick={clearSearch}
+              className="text-green-500 hover:text-green-400 text-sm font-medium"
+            >
+              Limpar pesquisa
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {displayPhotos.slice(0, 3).map((photo, index) => (
             <motion.div
               key={photo.id}
               whileHover={{ scale: 1.05 }}
@@ -255,32 +322,35 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, cur
                 setCurrentPhotoIndex(index);
                 setIsOpen(true);
               }}
-              className="relative rounded-xl overflow-hidden cursor-pointer aspect-[3/4]"
+              className="relative rounded-lg overflow-hidden cursor-pointer aspect-[3/4]"
             >
-              <img
+              <Image
                 src={photo.image}
                 alt={photo.title}
-                className="w-full h-full object-cover object-top"
+                fill
+                sizes="33vw"
+                className="object-cover object-top"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                 <p className="text-white text-sm font-medium">{photo.title}</p>
               </div>
             </motion.div>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* Indicador de progresso */}
-        {isPlaying && (
+        {isPlaying && !isSearching && (
           <div className="mb-4">
             <div className="flex justify-between text-sm text-gray-400 mb-2">
-              <span>Foto {currentPhotoIndex + 1} de {photos.length}</span>
-              <span className="truncate max-w-[200px]">{photos[currentPhotoIndex].title}</span>
+              <span>Foto {currentPhotoIndex + 1} de {displayPhotos.length}</span>
+              <span className="truncate max-w-[200px]">{displayPhotos[currentPhotoIndex]?.title || ''}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <motion.div
                 className="bg-green-500 h-2 rounded-full"
                 style={{
-                  width: `${((currentPhotoIndex + 1) / photos.length) * 100}%`
+                  width: `${((currentPhotoIndex + 1) / displayPhotos.length) * 100}%`
                 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
               />
@@ -288,14 +358,16 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, cur
           </div>
         )}
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsOpen(true)}
-          className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
-        >
-          Ver Galeria Completa
-        </motion.button>
+        {displayPhotos.length > 0 && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsOpen(true)}
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
+          >
+            {isSearching ? `Ver ${displayPhotos.length} Fotos Encontradas` : 'Ver Galeria Completa'}
+          </motion.button>
+        )}
       </div>
 
       {/* Modal da galeria */}
@@ -318,7 +390,7 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, cur
               {/* Header do modal */}
               <div className="flex items-center justify-between p-4 border-b border-gray-700">
                 <h3 className="text-white text-xl font-bold">
-                  {photos[currentPhotoIndex].title}
+                  {displayPhotos[currentPhotoIndex]?.title || 'Foto não encontrada'}
                 </h3>
                 <div className="flex items-center space-x-4">
                   {/* Botão de mute */}
@@ -368,68 +440,92 @@ export function PhotoGallery({ isMuted, onToggleMute, currentTime, duration, cur
               </div>
 
               {/* Imagem principal */}
-              <div className="relative">
-                <img
-                  src={photos[currentPhotoIndex].image}
-                  alt={photos[currentPhotoIndex].title}
-                  className="w-full h-96 object-cover object-top"
-                />
+              <div className="relative h-96">
+                {displayPhotos[currentPhotoIndex]?.image ? (
+                  <Image
+                    src={displayPhotos[currentPhotoIndex].image}
+                    alt={displayPhotos[currentPhotoIndex].title || ''}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 100vw"
+                    className="object-cover object-top"
+                  />
+                ) : (
+                  <div className="w-full h-96 bg-gray-800 flex items-center justify-center">
+                    <div className="text-center text-gray-400">
+                      <svg className="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                      </svg>
+                      <p className="text-lg font-medium">Foto não encontrada</p>
+                      <p className="text-sm">Selecione uma foto da galeria</p>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Navegação */}
-                <button
-                  onClick={prevPhoto}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                >
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                  </svg>
-                </button>
-                
-                <button
-                  onClick={nextPhoto}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                >
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                  </svg>
-                </button>
+                {displayPhotos.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevPhoto}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                    >
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                      </svg>
+                    </button>
+                    
+                    <button
+                      onClick={nextPhoto}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                    >
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Grid de miniaturas */}
               <div className="p-4">
-                <h4 className="text-white text-lg font-semibold mb-3">Todas as fotos</h4>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                  {photos.map((photo, index) => (
-                    <motion.button
-                      key={photo.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setCurrentPhotoIndex(index)}
-                      className={`relative rounded-lg overflow-hidden aspect-square ${
-                        index === currentPhotoIndex ? 'ring-2 ring-green-500' : ''
-                      }`}
-                    >
-                      <img
-                        src={photo.image}
-                        alt={photo.title}
-                        className="w-full h-full object-cover object-top"
-                      />
-                      {index === currentPhotoIndex && (
-                        <div className="absolute inset-0 bg-green-500 bg-opacity-30 flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                        </div>
-                      )}
-                    </motion.button>
-                  ))}
+                <h4 className="text-white text-lg font-semibold mb-3">
+                  {isSearching ? `Fotos encontradas (${displayPhotos.length})` : 'Todas as fotos'}
+                </h4>
+                <div className="max-h-80 overflow-y-auto">
+                  <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                    {displayPhotos.map((photo, index) => (
+                      <motion.button
+                        key={photo.id}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setCurrentPhotoIndex(index)}
+                        className={`relative rounded-lg overflow-hidden aspect-square ${
+                          index === currentPhotoIndex ? 'ring-2 ring-green-500' : ''
+                        }`}
+                      >
+                        <Image
+                          src={photo.image}
+                          alt={photo.title}
+                          width={100}
+                          height={100}
+                          className="w-full h-full object-cover object-top"
+                        />
+                        {index === currentPhotoIndex && (
+                          <div className="absolute inset-0 bg-green-500 bg-opacity-30 flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        )}
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* Informações da foto */}
               <div className="p-4 border-t border-gray-700">
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  {photos[currentPhotoIndex].description}
+                  {displayPhotos[currentPhotoIndex]?.description || 'Descrição não disponível'}
                 </p>
               </div>
             </motion.div>

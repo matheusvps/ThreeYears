@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { siteConfig } from '@/config/site';
 
 interface LandingScreenProps {
   onViewGift: () => void;
@@ -9,14 +8,14 @@ interface LandingScreenProps {
 
 export function LandingScreen({ onViewGift }: LandingScreenProps) {
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col w-full">
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="max-w-md mx-auto"
+          className="max-w-sm mx-auto w-full"
         >
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-tight">
             Eu quis fazer um{' '}

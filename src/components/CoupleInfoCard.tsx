@@ -75,28 +75,28 @@ const TimeCounters = memo(function TimeCounters() {
     <div className="w-full flex h-full items-center justify-center">
       <div className="text-card-foreground rounded-2xl w-full bg-transparent border-0 border-transparent border-b-0 shadow-none">
         <div className="p-0">
-          <div className="grid gap-4 grid-cols-3">
-            <div className="flex flex-col items-center p-4 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
+          <div className="grid gap-3 grid-cols-3">
+            <div className="flex flex-col items-center p-3 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
               <span className="text-2xl font-bold mb-1 text-[#F2F9FE]">{timeCounters.years}</span>
               <span className="text-sm text-[#e6e1e5]">Anos</span>
             </div>
-            <div className="flex flex-col items-center p-4 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
+            <div className="flex flex-col items-center p-3 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
               <span className="text-2xl font-bold mb-1 text-[#F2F9FE]">{timeCounters.months}</span>
               <span className="text-sm text-[#e6e1e5]">Meses</span>
             </div>
-            <div className="flex flex-col items-center p-4 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
+            <div className="flex flex-col items-center p-3 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
               <span className="text-2xl font-bold mb-1 text-[#F2F9FE]">{timeCounters.days}</span>
               <span className="text-sm text-[#e6e1e5]">Dias</span>
             </div>
-            <div className="flex flex-col items-center p-4 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
+            <div className="flex flex-col items-center p-3 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
               <span className="text-2xl font-bold mb-1 text-[#F2F9FE]">{timeCounters.hours}</span>
               <span className="text-sm text-[#e6e1e5]">Horas</span>
             </div>
-            <div className="flex flex-col items-center p-4 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
+            <div className="flex flex-col items-center p-3 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
               <span className="text-2xl font-bold mb-1 text-[#F2F9FE]">{timeCounters.minutes}</span>
               <span className="text-sm text-[#e6e1e5]">Minutos</span>
             </div>
-            <div className="flex flex-col items-center p-4 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
+            <div className="flex flex-col items-center p-3 rounded-xl border-2 border-b-[6px] border-[#262626]/60">
               <span className="text-2xl font-bold mb-1 text-[#F2F9FE]">{timeCounters.seconds}</span>
               <span className="text-sm text-[#e6e1e5]">Segundos</span>
             </div>
@@ -111,7 +111,7 @@ export const CoupleInfoCard = memo(function CoupleInfoCard() {
   return (
     <div className="flex flex-col gap-6 h-fit w-full mt-4 px-4">
       <div className="flex w-full min-h-[200px] h-fit items-center justify-center">
-        <div className="flex flex-col bg-[#332f2f] h-fit w-full z-10 rounded-2xl">
+        <div className="flex flex-col bg-[#332f2f] h-fit w-full z-10 rounded-2xl max-w-sm mx-auto">
           {/* Header com imagem de fundo - agora separado */}
           <CoupleImage />
 

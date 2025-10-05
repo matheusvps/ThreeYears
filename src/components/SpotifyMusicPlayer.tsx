@@ -5,6 +5,8 @@ import { useState, useRef, useEffect } from 'react';
 import { CoupleInfoCard } from './CoupleInfoCard';
 import { SpecialMessage } from './SpecialMessage';
 import { PhotoGallery } from './PhotoGallery';
+import { LibraryView } from './LibraryView';
+import { Photo } from '@/hooks/useSearch';
 
 interface MusicTrack {
   id: string;
@@ -25,6 +27,7 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>('home');
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const tracks: MusicTrack[] = [
@@ -146,8 +149,186 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
 
   const currentTrackData = tracks[currentTrack];
 
+  // Dados das fotos para a biblioteca
+  const photos: Photo[] = [
+    {
+      id: 1,
+      title: "São João 2025",
+      image: "/images/image.jpg",
+      description: "Nós dois no São João de 2025, de frente à uma fogueira, abraçados"
+    },
+    {
+      id: 2,
+      title: "Feijoada do Noivado",
+      image: "/images/image2.jpg",
+      description: "Fomos comer uma feijoada enquanto planejávamos o noivado. Foi muito gostoso, passamos o dia juntos"
+    },
+    {
+      id: 3,
+      title: "Preparando a Casa",
+      image: "/images/image3.jpg",
+      description: "Comprando louças e algumas coisas que queríamos pra casa, preparando pro noivado"
+    },
+    {
+      id: 4,
+      title: "Momentos de Paz",
+      image: "/images/image4.jpg",
+      description: "Deitados, apenas. Ela sorrindo e eu de perfil olhando alguma outra coisa"
+    },
+    {
+      id: 5,
+      title: "Com o Dante",
+      image: "/images/image5.jpg",
+      description: "Nós dois sorrindo, deitados, com o Dante (cachorro salsicha dela)"
+    },
+    {
+      id: 6,
+      title: "Com a Cacau",
+      image: "/images/image6.jpg",
+      description: "Nós dois deitados, sorrindo, com Cacau (minha cadela) entre nós dois"
+    },
+    {
+      id: 7,
+      title: "Formatura em Família",
+      image: "/images/image7.jpg",
+      description: "Comemorando a formatura dela em família (pais dela, irmão dela, minha mãe e nós dois)"
+    },
+    {
+      id: 8,
+      title: "Salvador 2025R",
+      image: "/images/image8.jpg",
+      description: "Segunda viagem à Salvador (Bahia). Foto com meu pai e meu sobrinho no meu ombro"
+    },
+    {
+      id: 9,
+      title: "O Calabouço",
+      image: "/images/image9.jpg",
+      description: "Fomos num restaurante chamado O Calabouço, depois que passei 1 mês fora viajando, pra matar a saudade e comemorar as conquistas dela"
+    },
+    {
+      id: 10,
+      title: "Kit de Louças",
+      image: "/images/image10.jpg",
+      description: "Nós dois, deitados, com o kit de 52 louças que compramos pra quando formos morar juntos"
+    },
+    {
+      id: 11,
+      title: "Primeiros Encontros",
+      image: "/images/image11.jpg",
+      description: "Um dos nossos primeiros encontros, quando tudo ainda era novidade e cada momento juntos era uma descoberta"
+    },
+    {
+      id: 12,
+      title: "Olhares e Sorrisos",
+      image: "/images/image12.jpg",
+      description: "Nosso segundo ou terceiro encontro, nos olhando e sorrindo - quando soubemos que algo especial estava nascendo entre nós"
+    },
+    {
+      id: 13,
+      title: "Chalé e Fogueira",
+      image: "/images/image13.jpg",
+      description: "Nosso primeiro chalé alugado, acendendo uma fogueira juntos e criando memórias que aquecem o coração até hoje"
+    },
+    {
+      id: 14,
+      title: "Reencontro Após Salvador",
+      image: "/images/image14.jpg",
+      description: "O reencontro depois de dois meses longe, quando viajei para Salvador. O abraço que valeu por todos os dias de saudade"
+    },
+    {
+      id: 15,
+      title: "Café da Manhã Sério",
+      image: "/images/image15.jpg",
+      description: "Um momento sério em uma cafeteria, quando os olhares já falavam mais que as palavras"
+    },
+    {
+      id: 16,
+      title: "Enchendo o Bucho",
+      image: "/images/image16.jpg",
+      description: "Aquele momento descontraído enchendo o bucho de comida, quando a felicidade simples se tornou nossa rotina"
+    },
+    {
+      id: 17,
+      title: "Primeiro Morro",
+      image: "/images/image17.jpg",
+      description: "Nosso primeiro morro juntos, onde eu estava morrendo de frio mas o coração estava quente. Foi ali que pedi você em noivado"
+    },
+    {
+      id: 18,
+      title: "Marshmallow na Fogueira",
+      image: "/images/image18.jpg",
+      description: "Comendo marshmallow na fogueira, criando tradições que se tornaram parte da nossa história de amor"
+    },
+    {
+      id: 19,
+      title: "Chalé do Final de Semana",
+      image: "/images/image19.jpg",
+      description: "Mais uma vez alugamos um chalé no final de semana, porque esses momentos a sós são os que mais nos conectam"
+    },
+    {
+      id: 20,
+      title: "Beijo no Deck",
+      image: "/images/image20.jpg",
+      description: "Nosso beijo no deck sobre o lago do chalé - um momento de pura paixão e conexão, com a natureza como testemunha"
+    },
+    {
+      id: 21,
+      title: "Marco das Três Fronteiras",
+      image: "/images/image21.jpg",
+      description: "Nós dois no Marco das Três Fronteiras em Foz do Iguaçu, explorando o mundo juntos e descobrindo novos horizontes"
+    },
+    {
+      id: 22,
+      title: "Foz do Iguaçu",
+      image: "/images/image22.jpg",
+      description: "Mais uma foto nossa em Foz do Iguaçu, registrando nossa aventura pelas cataratas e pela vida a dois"
+    },
+    {
+      id: 23,
+      title: "Bancando a unha da madame",
+      image: "/images/image23.jpg",
+      description: "Banquei uma unha para você ficar bem bonitona - pequenos gestos que mostram o quanto me importo com seus detalhes"
+    },
+    {
+      id: 24,
+      title: "Ano Novo 2023-2024",
+      image: "/images/image24.jpg",
+      description: "Nosso ano novo de 2023 para 2024, levemente alcoolizados e muito felizes, celebrando mais um ano de amor"
+    },
+    {
+      id: 25,
+      title: "Sorvete na Praia",
+      image: "/images/image25.jpg",
+      description: "Tomando sorvete na praia do Ervino, saboreando a doçura do momento e da nossa companhia"
+    },
+    {
+      id: 26,
+      title: "Formatura do João",
+      image: "/images/image26.jpg",
+      description: "Arrumados para a formatura do João, celebrando conquistas em família e criando memórias especiais"
+    },
+    {
+      id: 27,
+      title: "Casamento Especial",
+      image: "/images/image27.jpg",
+      description: "Em um casamento especial, nos beijando e celebrando o amor - não só o dos noivos, mas o nosso também"
+    },
+    {
+      id: 28,
+      title: "Meu Aniversário",
+      image: "/images/image28.jpg",
+      description: "Meu aniversário em família, rindo e celebrando a vida ao lado das pessoas que mais amo, especialmente você"
+    },
+    {
+      id: 29,
+      title: "Juntos e Sorrindo",
+      image: "/images/image29.jpg",
+      description: "Simplesmente nós dois, juntos e sorrindo - porque às vezes o mais bonito é a simplicidade de estar ao lado de quem amamos"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black w-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <motion.button
@@ -172,7 +353,7 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-64 h-64 md:w-80 md:h-80 relative"
+          className="w-64 h-64 relative max-w-sm"
         >
           <img
             src={currentTrackData.image}
@@ -273,18 +454,43 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
         </div>
       </div>
 
-      {/* Seções de Informação */}
+      {/* Conteúdo das abas */}
       <div className="pb-20">
-        <CoupleInfoCard />
-        <SpecialMessage />
-        <PhotoGallery 
-          isMuted={isMuted} 
-          onToggleMute={toggleMute}
-          currentTime={currentTime}
-          duration={duration}
-          currentTrack={currentTrack}
-          isPlaying={isPlaying}
-        />
+        {activeTab === 'home' && (
+          <>
+            <CoupleInfoCard />
+            <SpecialMessage />
+            <PhotoGallery 
+              isMuted={isMuted} 
+              onToggleMute={toggleMute}
+              currentTime={currentTime}
+              duration={duration}
+              isPlaying={isPlaying}
+            />
+          </>
+        )}
+        
+        {activeTab === 'search' && (
+          <div className="px-4 py-6">
+            <div className="text-center mb-8">
+              <h2 className="text-white text-2xl font-bold mb-4">Pesquisar Fotos</h2>
+              <p className="text-gray-400 text-sm">
+                Encontre suas memórias favoritas pesquisando por palavras-chave
+              </p>
+            </div>
+            <PhotoGallery 
+              isMuted={isMuted} 
+              onToggleMute={toggleMute}
+              currentTime={currentTime}
+              duration={duration}
+              isPlaying={isPlaying}
+            />
+          </div>
+        )}
+        
+        {activeTab === 'library' && (
+          <LibraryView photos={photos} />
+        )}
       </div>
 
       {/* Bottom Navigation */}
@@ -293,7 +499,10 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex flex-col items-center space-y-1 text-gray-400 hover:text-white transition-colors"
+            onClick={() => setActiveTab('home')}
+            className={`flex flex-col items-center space-y-1 transition-colors ${
+              activeTab === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'
+            }`}
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
@@ -304,7 +513,10 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex flex-col items-center space-y-1 text-white transition-colors"
+            onClick={() => setActiveTab('search')}
+            className={`flex flex-col items-center space-y-1 transition-colors ${
+              activeTab === 'search' ? 'text-white' : 'text-gray-400 hover:text-white'
+            }`}
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -315,7 +527,10 @@ export function SpotifyMusicPlayer({ onBack }: SpotifyMusicPlayerProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex flex-col items-center space-y-1 text-gray-400 hover:text-white transition-colors"
+            onClick={() => setActiveTab('library')}
+            className={`flex flex-col items-center space-y-1 transition-colors ${
+              activeTab === 'library' ? 'text-white' : 'text-gray-400 hover:text-white'
+            }`}
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
