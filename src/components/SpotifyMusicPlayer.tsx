@@ -263,39 +263,39 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
       {/* Header */}
       <PlayerHeader onBack={onBack} />
 
-      {/* Album Art */}
-      <AlbumArt src={currentTrackData.image} alt={currentTrackData.title} isPlaying={isPlaying} />
-
-      {/* Track Info */}
-      <div className="px-6 mb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-center"
-        >
-          <h2 className="text-white text-xl font-bold mb-1">{currentTrackData.title}</h2>
-          <p className="text-gray-400 text-sm">{currentTrackData.artist}</p>
-        </motion.div>
-      </div>
-
-      {/* Progress Bar */}
-      <ProgressBar currentTime={currentTime} duration={duration} onSeek={handleSeek} formatTime={formatTime} />
-
-      {/* Controls */}
-      <Controls
-        isPlaying={isPlaying}
-        onPlayPause={handlePlayPause}
-        onPrev={handlePrevious}
-        onNext={handleNext}
-        canPrev={currentTrack !== 0}
-        canNext={currentTrack !== tracks.length - 1}
-      />
-
       {/* Conteúdo das abas (scroll interno independente) */}
       <div className="player-scroll flex-1 overflow-y-auto pb-24">
         {activeTab === 'home' && (
           <>
+            {/* Album Art */}
+            <AlbumArt src={currentTrackData.image} alt={currentTrackData.title} isPlaying={isPlaying} />
+
+            {/* Track Info */}
+            <div className="px-6 mb-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-center"
+              >
+                <h2 className="text-white text-xl font-bold mb-1">{currentTrackData.title}</h2>
+                <p className="text-gray-400 text-sm">{currentTrackData.artist}</p>
+              </motion.div>
+            </div>
+
+            {/* Progress Bar */}
+            <ProgressBar currentTime={currentTime} duration={duration} onSeek={handleSeek} formatTime={formatTime} />
+
+            {/* Controls */}
+            <Controls
+              isPlaying={isPlaying}
+              onPlayPause={handlePlayPause}
+              onPrev={handlePrevious}
+              onNext={handleNext}
+              canPrev={currentTrack !== 0}
+              canNext={currentTrack !== tracks.length - 1}
+            />
+
             <CoupleInfoCard />
             <SpecialMessage />
             <PhotoGallery 
