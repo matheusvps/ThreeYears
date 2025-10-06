@@ -45,7 +45,15 @@ export function MiniPlayer({
         <div className="flex items-center gap-4 p-4">
           <div className="shrink-0 rounded-lg overflow-hidden w-14 h-14 bg-black/40">
             {thumbnailSrc ? (
-              <Image src={thumbnailSrc} alt={title} width={56} height={56} className="w-14 h-14 object-cover" />
+              <Image 
+                src={thumbnailSrc} 
+                alt={title} 
+                width={112} 
+                height={112} 
+                className="w-14 h-14 object-cover" 
+                quality={90}
+                sizes="56px"
+              />
             ) : (
               <div className="w-14 h-14" />
             )}

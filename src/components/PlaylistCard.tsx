@@ -23,11 +23,13 @@ export function PlaylistCard({ playlist, onClick }: PlaylistCardProps) {
           <Image
             src={playlist.coverImage}
             alt={playlist.title}
-            width={100}
-            height={100}
+            width={128}
+            height={128}
             className="w-full h-full object-contain"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
+            quality={90}
+            sizes="64px"
           />
           <div className={`absolute inset-0 bg-gradient-to-br ${playlist.color} opacity-20`} />
         </div>

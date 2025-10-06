@@ -20,12 +20,14 @@ export function AlbumArt({ src, alt, isPlaying }: AlbumArtProps) {
         <Image
           src={src}
           alt={alt}
-          width={100}
-          height={100}
+          width={512}
+          height={512}
           className="w-full h-full object-cover rounded-lg shadow-2xl"
           placeholder="blur"
           blurDataURL={BLUR_DATA_URL}
           priority
+          quality={95}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         {isPlaying && (
           <motion.div

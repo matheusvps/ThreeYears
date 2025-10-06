@@ -145,6 +145,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        // Não precisamos setar o currentTime aqui pois o handleTimeUpdate já faz isso
       } else {
         audioRef.current.play();
       }
@@ -174,10 +175,10 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
 
   const handleTimeUpdate = useCallback(() => {
     const audio = audioRef.current;
-    if (audio) {
+    if (audio && isPlaying) {
       setCurrentTime(audio.currentTime);
     }
-  }, []);
+  }, [isPlaying]);
 
   const handleLoadedMetadata = useCallback(() => {
     const audio = audioRef.current;
@@ -257,9 +258,9 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
         audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
         audio.removeEventListener('ended', handleEnded);
       };
-  }, [autoplay, handleLoadedMetadata, handleTimeUpdate, handleEnded]);
+  }, [autoplay, handleLoadedMetadata, handleTimeUpdate, handleEnded, isPlaying]);
 
-  // Troca de faixa: resetar tempo e manter autoplay se já estava tocando
+  // Troca de faixa: resetar tempo apenas quando a faixa muda
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;

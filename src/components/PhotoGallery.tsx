@@ -53,7 +53,6 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
       const totalPhotos = displayPhotos.length;
       const clampedGlobal = Math.max(0, Math.min(globalTimeSec, totalDurationSec));
       const photoIndex = Math.floor((clampedGlobal / totalDurationSec) * totalPhotos);
-      const validIndex = Math.min(photoIndex, totalPhotos - 1);
       
       // Trocar foto a cada 30 segundos (42 fotos em ~20 minutos)
       const timeBasedIndex = Math.floor(globalTimeSec / 30) % totalPhotos;
@@ -180,7 +179,8 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
                 fill
                 sizes="33vw"
                 className="object-cover object-top"
-                placeholder="blur"
+                quality={90}
+                  placeholder="blur"
                 blurDataURL={BLUR_DATA_URL}
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
@@ -303,6 +303,8 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
                     fill
                     sizes="(max-width: 1024px) 100vw, 100vw"
                     className="object-contain"
+                    quality={95}
+                    priority
                     placeholder="blur"
                     blurDataURL={BLUR_DATA_URL}
                   />
@@ -362,9 +364,11 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
                         <Image
                           src={photo.image}
                           alt={photo.title}
-                          width={100}
-                          height={100}
+                          width={200}
+                          height={200}
                           className="w-full h-full object-contain bg-gray-800"
+                          quality={85}
+                          sizes="100px"
                           placeholder="blur"
                           blurDataURL={BLUR_DATA_URL}
                         />

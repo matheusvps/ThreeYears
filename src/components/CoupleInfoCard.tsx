@@ -25,6 +25,10 @@ const CoupleImage = memo(function CoupleImage() {
         className="object-cover" 
         src="/images/image9.jpg"
         priority
+        quality={95}
+        sizes="(max-width: 768px) 100vw, 50vw"
+        placeholder="blur"
+        blurDataURL="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
         onError={(e) => {
           console.log('Erro ao carregar imagem:', e);
         }}
