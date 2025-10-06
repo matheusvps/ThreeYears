@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, memo } from 'react';
+import moment from 'moment';
+import 'moment/locale/pt-br';
 import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 
@@ -48,16 +50,27 @@ const TimeCounters = memo(function TimeCounters() {
 
   useEffect(() => {
     const calculateTimeTogether = () => {
-      const startDate = new Date('2022-10-11T19:00:00'); // 11/10/2022 às 19h
-      const now = new Date();
-      const diffTime = now.getTime() - startDate.getTime();
+      // 11/10/2022 19:00 local
+      const start = moment('2022-10-11T19:00:00');
+      const now = moment();
 
-      const years = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365));
-      const months = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
-      const days = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+      // Calcular diferenças encadeadas: anos -> meses -> dias -> horas -> minutos -> segundos
+      const years = now.diff(start, 'years');
+      const afterYears = start.clone().add(years, 'years');
+
+      const months = now.diff(afterYears, 'months');
+      const afterMonths = afterYears.clone().add(months, 'months');
+
+      const days = now.diff(afterMonths, 'days');
+      const afterDays = afterMonths.clone().add(days, 'days');
+
+      const hours = now.diff(afterDays, 'hours');
+      const afterHours = afterDays.clone().add(hours, 'hours');
+
+      const minutes = now.diff(afterHours, 'minutes');
+      const afterMinutes = afterHours.clone().add(minutes, 'minutes');
+
+      const seconds = now.diff(afterMinutes, 'seconds');
 
       setTimeCounters({ years, months, days, hours, minutes, seconds });
     };
