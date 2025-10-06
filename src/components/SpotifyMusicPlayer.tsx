@@ -13,6 +13,7 @@ import { AlbumArt } from './player/AlbumArt';
 import { ProgressBar } from './player/ProgressBar';
 import { Controls } from './player/Controls';
 import { BottomNav } from './player/BottomNav';
+import { MiniPlayer } from './player/MiniPlayer';
 interface MusicTrack {
   id: string;
   title: string;
@@ -36,6 +37,8 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
   const [isMuted, setIsMuted] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>(initialActiveTab);
   const [trackDurations, setTrackDurations] = useState<Record<string, number>>({});
+  const [showMini, setShowMini] = useState(false);
+  const heroRef = useRef<HTMLDivElement | null>(null);
 
   // Depuração: logar mudanças de aba (apenas em dev)
   useEffect(() => {
@@ -213,6 +216,21 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
     }
   };
 
+  // Mostrar mini-player quando a arte do álbum não estiver visível
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setShowMini(!entry.isIntersecting);
+      },
+      { root: document.querySelector('.player-scroll'), threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [heroRef]);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -298,12 +316,14 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
       <div className="player-scroll flex-1 overflow-y-auto pb-24">
         {activeTab === 'home' && (
           <>
-            {/* Album Art */}
-            <AlbumArt 
-              src={sharedPhotos[currentPhotoIndex]?.image || currentTrackData.image} 
-              alt={sharedPhotos[currentPhotoIndex]?.title || currentTrackData.title} 
-              isPlaying={isPlaying} 
-            />
+            {/* Album Art (observado para mini-player) */}
+            <div ref={heroRef}>
+              <AlbumArt 
+                src={sharedPhotos[currentPhotoIndex]?.image || currentTrackData.image} 
+                alt={sharedPhotos[currentPhotoIndex]?.title || currentTrackData.title} 
+                isPlaying={isPlaying} 
+              />
+            </div>
 
             {/* Track Info */}
             <div className="px-6 mb-6">
@@ -380,6 +400,23 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
         src={encodeURI(currentTrackData.file)}
         preload="metadata"
       />
+
+      {/* Mini Player - aparece quando a arte principal sai de vista ou outra aba */}
+      {(showMini || activeTab !== 'home') && (
+        <MiniPlayer
+          thumbnailSrc={sharedPhotos[currentPhotoIndex]?.image || currentTrackData.image}
+          title={currentTrackData.title}
+          artist={currentTrackData.artist}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={duration || currentTrackData.duration}
+          onPlayPause={handlePlayPause}
+          onPrev={handlePrevious}
+          onNext={handleNext}
+          onSeek={handleSeek}
+          formatTime={formatTime}
+        />
+      )}
     </div>
   );
 }

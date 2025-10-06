@@ -45,7 +45,7 @@ export const photos: Photo[] = [
   },
   {
     id: 8,
-    title: "Salvador 2025R",
+    title: "Salvador 2025",
     image: "/images/image8.jpg",
     description: "Segunda viagem à Salvador (Bahia). Foto com meu pai e meu sobrinho no meu ombro"
   },
