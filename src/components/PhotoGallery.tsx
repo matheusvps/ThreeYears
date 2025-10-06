@@ -54,8 +54,13 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
       const clampedGlobal = Math.max(0, Math.min(globalTimeSec, totalDurationSec));
       const photoIndex = Math.floor((clampedGlobal / totalDurationSec) * totalPhotos);
       const validIndex = Math.min(photoIndex, totalPhotos - 1);
-      if (validIndex !== currentPhotoIndex && !isOpen) {
-        setCurrentPhotoIndex(validIndex);
+      
+      // Trocar foto a cada 30 segundos (42 fotos em ~20 minutos)
+      const timeBasedIndex = Math.floor(globalTimeSec / 30) % totalPhotos;
+      
+      // Usar timeBasedIndex para troca baseada em tempo
+      if (timeBasedIndex !== currentPhotoIndex && !isOpen) {
+        setCurrentPhotoIndex(timeBasedIndex);
       }
     }
   }, [globalTimeSec, totalDurationSec, isPlaying, displayPhotos.length, currentPhotoIndex, isOpen, isSearching]);

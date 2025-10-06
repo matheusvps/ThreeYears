@@ -77,26 +77,42 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
   const tracks: MusicTrack[] = useMemo(() => [
     {
       id: '1',
-      title: 'O Meu Amor',
-      artist: 'Maria Bethânia',
-      file: '/musics/O Meu Amor - Maria Bethânia (youtube).mp3',
-      image: '/images/image.jpg', // Usando uma das imagens existentes
+      title: 'Pelado',
+      artist: 'Nattanzinho',
+      file: '/musics/Pelado.mp3',
+      image: '/images/image.jpg',
       duration: 180 // 3 minutos
     },
     {
       id: '2',
-      title: 'Absolute Beginners',
-      artist: 'David Bowie',
-      file: '/musics/David Bowie - Absolute Beginners (Official Video) - David Bowie (youtube).mp3',
+      title: 'O Meu Amor',
+      artist: 'Maria Bethânia',
+      file: '/musics/O Meu Amor - Maria Bethânia (youtube).mp3',
       image: '/images/image2.jpg',
-      duration: 300 // 5 minutos
+      duration: 180 // 3 minutos
     },
     {
       id: '3',
+      title: 'Have You Ever Loved a Woman',
+      artist: 'Bryan Adams',
+      file: '/musics/Have you Ever loved a woman bryan adams.mp3',
+      image: '/images/image3.jpg',
+      duration: 240 // 4 minutos
+    },
+    {
+      id: '4',
+      title: 'Absolute Beginners',
+      artist: 'David Bowie',
+      file: '/musics/David Bowie - Absolute Beginners (Official Video) - David Bowie (youtube).mp3',
+      image: '/images/image4.jpg',
+      duration: 300 // 5 minutos
+    },
+    {
+      id: '5',
       title: "Can't Take My Eyes Off You",
       artist: 'Frankie Valli x Lauryn Hill (Joseph Vincent Cover)',
       file: '/musics/Can\'t Take My Eyes Off You - Frankie Valli x Lauryn Hill (Joseph Vincent Cover) - Joseph Vincent (youtube).mp3',
-      image: '/images/image3.jpg',
+      image: '/images/image5.jpg',
       duration: 240 // 4 minutos
     }
   ], []);
@@ -113,7 +129,8 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
   // Tempo global transcorrido somando faixas anteriores + tempo atual
   const globalTimeSec = tracks
     .slice(0, currentTrack)
-    .reduce((sum, t) => sum + t.duration, 0) + currentTime;
+    .reduce((sum, t) => sum + (trackDurations[t.id] || t.duration), 0) + currentTime;
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -229,12 +246,26 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = 0;
+    setCurrentTime(0);
+    // Não resetar duration imediatamente - deixar os metadados carregarem
     if (isPlaying) {
       audio.play().catch(() => {});
     }
   }, [currentTrack, isPlaying]);
 
+
   const currentTrackData = tracks[currentTrack];
+
+  // Calcular qual foto deve ser exibida no AlbumArt baseado no tempo global
+  const currentPhotoIndex = useMemo(() => {
+    if (totalDurationSec > 0) {
+      const totalPhotos = sharedPhotos.length;
+      const clampedGlobal = Math.max(0, Math.min(globalTimeSec, totalDurationSec));
+      const photoIndex = Math.floor((clampedGlobal / totalDurationSec) * totalPhotos);
+      return Math.min(photoIndex, totalPhotos - 1);
+    }
+    return 0;
+  }, [globalTimeSec, totalDurationSec]);
 
   // Preload da próxima faixa (metadados e cache)
   useEffect(() => {
@@ -268,7 +299,11 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
         {activeTab === 'home' && (
           <>
             {/* Album Art */}
-            <AlbumArt src={currentTrackData.image} alt={currentTrackData.title} isPlaying={isPlaying} />
+            <AlbumArt 
+              src={sharedPhotos[currentPhotoIndex]?.image || currentTrackData.image} 
+              alt={sharedPhotos[currentPhotoIndex]?.title || currentTrackData.title} 
+              isPlaying={isPlaying} 
+            />
 
             {/* Track Info */}
             <div className="px-6 mb-6">
@@ -284,7 +319,12 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
             </div>
 
             {/* Progress Bar */}
-            <ProgressBar currentTime={currentTime} duration={duration} onSeek={handleSeek} formatTime={formatTime} />
+            <ProgressBar 
+              currentTime={currentTime} 
+              duration={duration || currentTrackData.duration} 
+              onSeek={handleSeek} 
+              formatTime={formatTime} 
+            />
 
             {/* Controls */}
             <Controls

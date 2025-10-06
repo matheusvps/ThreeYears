@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePlaylists } from '@/hooks/usePlaylists';
 import { PlaylistCard } from './PlaylistCard';
 import { PlaylistView } from './PlaylistView';
@@ -15,9 +15,10 @@ export function LibraryView({ photos }: LibraryViewProps) {
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('Todas');
+  const [sortOrder, setSortOrder] = useState<'title' | 'theme'>('title');
   const { playlists, getPlaylistById } = usePlaylists(photos);
 
-  // Filtrar playlists baseado na pesquisa
+  // Filtrar e ordenar playlists baseado na pesquisa e filtros
   const filteredPlaylists = playlists.filter(playlist => {
     const matchesSearch =
       playlist.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -30,19 +31,16 @@ export function LibraryView({ photos }: LibraryViewProps) {
       (activeFilter === 'Romance' && playlist.theme === 'romance') ||
       (activeFilter === 'Casa' && playlist.theme === 'casa');
     return matchesSearch && matchesFilter;
-  });
-
-  if (selectedPlaylist) {
-    const playlist = getPlaylistById(selectedPlaylist);
-    if (playlist) {
-      return (
-        <PlaylistView
-          playlist={playlist}
-          onBack={() => setSelectedPlaylist(null)}
-        />
-      );
+  }).sort((a, b) => {
+    switch (sortOrder) {
+      case 'title':
+        return a.title.localeCompare(b.title);
+      case 'theme':
+        return a.theme.localeCompare(b.theme);
+      default:
+        return 0;
     }
-  }
+  });
 
   return (
     <div className="min-h-screen bg-black">
@@ -52,9 +50,16 @@ export function LibraryView({ photos }: LibraryViewProps) {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          onClick={() => {
+            const newSortOrder = sortOrder === 'title' ? 'theme' : 'title';
+            setSortOrder(newSortOrder);
+          }}
+          className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center space-x-2"
         >
-          Criar
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
+          </svg>
+          <span>Ordenar</span>
         </motion.button>
       </div>
 
@@ -134,6 +139,43 @@ export function LibraryView({ photos }: LibraryViewProps) {
           </div>
         )}
       </div>
+
+      {/* Modal da Playlist */}
+      <AnimatePresence>
+        {selectedPlaylist && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedPlaylist(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Visualizar playlist"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-gray-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {(() => {
+                const playlist = getPlaylistById(selectedPlaylist);
+                if (playlist) {
+                  return (
+                    <PlaylistView
+                      playlist={playlist}
+                      onBack={() => setSelectedPlaylist(null)}
+                    />
+                  );
+                }
+                return null;
+              })()}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
