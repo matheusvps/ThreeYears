@@ -8,7 +8,9 @@ interface PlayerPageProps {
 }
 
 export default function PlayerPage({ searchParams }: PlayerPageProps) {
-  const resolvedSearchParams = use(searchParams || Promise.resolve({}));
+  const resolvedSearchParams = use(
+    searchParams ?? Promise.resolve<Record<string, string | string[] | undefined>>({})
+  );
   
   const initialActiveTab = useMemo(() => {
     const tab = (resolvedSearchParams?.tab as string) || 'home';
