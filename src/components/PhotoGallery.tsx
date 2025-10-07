@@ -24,9 +24,11 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
   const [isOpen, setIsOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const resultsScrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const photos: Photo[] = useMemo(() => sharedPhotos, []);
 
@@ -50,6 +52,30 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
       setCurrentPhotoIndex(0);
     }
   }, [displayPhotos.length, currentPhotoIndex]);
+
+  // Resetar página atual quando a pesquisa mudar
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [isSearching, searchQuery]);
+
+  // Monitorar scroll dos resultados para atualizar página atual
+  useEffect(() => {
+    const scrollContainer = resultsScrollRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollLeft = scrollContainer.scrollLeft;
+      const containerWidth = scrollContainer.clientWidth;
+      const photosPerPage = 3;
+      const photoWidth = (containerWidth - 24) / 3; // 24px é o gap total
+      const currentPageIndex = Math.round(scrollLeft / (photoWidth + 8)); // 8px é o gap entre fotos
+      
+      setCurrentPage(Math.min(currentPageIndex, Math.ceil(displayPhotos.length / photosPerPage) - 1));
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [displayPhotos.length]);
 
   // Sincronizar fotos com o progresso global (todas as músicas)
   useEffect(() => {
@@ -229,33 +255,78 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {displayPhotos.slice(0, 3).map((photo, index) => (
-            <motion.div
-              key={photo.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setCurrentPhotoIndex(index);
-                setIsOpen(true);
+          <div className="mb-6">
+            {/* Container com scroll horizontal para todas as fotos */}
+            <div 
+              ref={resultsScrollRef}
+              className={`flex gap-3 overflow-x-auto scrollbar-hide pb-2 photo-results-scroll scroll-indicator ${
+                displayPhotos.length > 3 ? 'has-more' : ''
+              }`}
+              style={{ 
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
               }}
-              className="relative rounded-lg overflow-hidden cursor-pointer aspect-[3/4]"
             >
-              <Image
-                src={photo.image}
-                alt={photo.title}
-                fill
-                sizes="33vw"
-                className="object-cover object-top"
-                quality={90}
-                  placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                <p className="text-white text-sm font-medium">{photo.title}</p>
+              {displayPhotos.map((photo, index) => (
+                <motion.div
+                  key={photo.id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setCurrentPhotoIndex(index);
+                    setIsOpen(true);
+                  }}
+                  className="relative rounded-lg overflow-hidden cursor-pointer aspect-[3/4] flex-shrink-0"
+                  style={{ width: 'calc(33.333% - 8px)', minWidth: '120px' }}
+                >
+                  <Image
+                    src={photo.image}
+                    alt={photo.title}
+                    fill
+                    sizes="(max-width: 768px) 33vw, 200px"
+                    className="object-cover object-top"
+                    quality={90}
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                    <p className="text-white text-sm font-medium">{photo.title}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Indicador de scroll quando há mais de 3 fotos */}
+            {displayPhotos.length > 3 && (
+              <div className="flex flex-col items-center mt-3 space-y-2">
+                {/* Texto de instrução */}
+                <div className="flex items-center space-x-1">
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                  </svg>
+                  <span className="text-gray-400 text-sm">Deslize para ver mais</span>
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15.41 7.41L10.83 12l4.58 4.59L14 18l-6-6 6-6 1.41 1.41z"/>
+                  </svg>
+                </div>
+                
+                {/* Indicadores de página */}
+                <div className="flex items-center space-x-2">
+                  {Array.from({ length: Math.min(3, Math.ceil(displayPhotos.length / 3)) }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        i === currentPage ? 'bg-green-500 scale-125' : 'bg-gray-500'
+                      }`}
+                    />
+                  ))}
+                  {displayPhotos.length > 9 && (
+                    <span className="text-gray-400 text-xs ml-1">+{displayPhotos.length - 9}</span>
+                  )}
+                </div>
               </div>
-            </motion.div>
-          ))}
+            )}
           </div>
         )}
 
