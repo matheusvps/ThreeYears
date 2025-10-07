@@ -38,6 +38,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
   const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>(initialActiveTab);
   const [trackDurations, setTrackDurations] = useState<Record<string, number>>({});
   const [showMini, setShowMini] = useState(false);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);
 
   // Depuração: logar mudanças de aba (apenas em dev)
@@ -142,26 +143,34 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
   };
 
   const handlePlayPause = () => {
-    if (audioRef.current) {
+    const audio = audioRef.current;
+    if (audio) {
       if (isPlaying) {
-        audioRef.current.pause();
-        // Não precisamos setar o currentTime aqui pois o handleTimeUpdate já faz isso
+        // Preservar o tempo atual antes de pausar
+        const currentAudioTime = audio.currentTime;
+        audio.pause();
+        setCurrentTime(currentAudioTime);
+        setShouldAutoPlay(false); // Usuário pausou manualmente
+        setIsPlaying(false);
       } else {
-        audioRef.current.play();
+        audio.play();
+        setShouldAutoPlay(true); // Usuário iniciou manualmente
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
   const handlePrevious = () => {
     if (currentTrack > 0) {
       setCurrentTrack(currentTrack - 1);
+      setShouldAutoPlay(isPlaying); // Manter o estado de reprodução atual
     }
   };
 
   const handleNext = () => {
     if (currentTrack < tracks.length - 1) {
       setCurrentTrack(currentTrack + 1);
+      setShouldAutoPlay(isPlaying); // Manter o estado de reprodução atual
     }
   };
 
@@ -175,10 +184,10 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
 
   const handleTimeUpdate = useCallback(() => {
     const audio = audioRef.current;
-    if (audio && isPlaying) {
+    if (audio) {
       setCurrentTime(audio.currentTime);
     }
-  }, [isPlaying]);
+  }, []);
 
   const handleLoadedMetadata = useCallback(() => {
     const audio = audioRef.current;
@@ -196,6 +205,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
       setCurrentTrack((prev) => prev + 1);
       setCurrentTime(0);
       // auto play next track se já estava tocando
+      setShouldAutoPlay(true); // Continuar tocando a próxima faixa
       const audio = audioRef.current;
       if (audio) {
         // play ocorrerá após o src trocar no render; garantir async
@@ -206,6 +216,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
       }
     } else {
       setIsPlaying(false);
+      setShouldAutoPlay(false);
       setCurrentTime(0);
     }
   }, [currentTrack, tracks.length]);
@@ -245,6 +256,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
         try {
           await audio.play();
           setIsPlaying(true);
+          setShouldAutoPlay(true);
       } catch {
         if (process.env.NODE_ENV !== 'production') {
           console.log('Autoplay foi bloqueado; aguardando interação do usuário.');
@@ -258,7 +270,7 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
         audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
         audio.removeEventListener('ended', handleEnded);
       };
-  }, [autoplay, handleLoadedMetadata, handleTimeUpdate, handleEnded, isPlaying]);
+  }, [autoplay, handleLoadedMetadata, handleTimeUpdate, handleEnded]);
 
   // Troca de faixa: resetar tempo apenas quando a faixa muda
   useEffect(() => {
@@ -266,11 +278,17 @@ export function SpotifyMusicPlayer({ onBack, initialActiveTab = 'home', autoplay
     if (!audio) return;
     audio.currentTime = 0;
     setCurrentTime(0);
-    // Não resetar duration imediatamente - deixar os metadados carregarem
-    if (isPlaying) {
+  }, [currentTrack]);
+
+  // Auto play quando shouldAutoPlay muda
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    if (shouldAutoPlay) {
       audio.play().catch(() => {});
     }
-  }, [currentTrack, isPlaying]);
+  }, [shouldAutoPlay]);
 
 
   const currentTrackData = tracks[currentTrack];

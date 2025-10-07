@@ -29,13 +29,15 @@ export const photos: Photo[] = [
     id: 5,
     title: "Com o Dante",
     image: "/images/image5.jpg",
-    description: "Nós dois sorrindo, deitados, com o Dante (cachorro salsicha dela)"
+    description: "Nós dois sorrindo, deitados, com o Dante (cachorro salsicha dela)",
+    tags: ["pets", "dante", "cachorro", "salsicha", "animais", "família"]
   },
   {
     id: 6,
     title: "Com a Cacau",
     image: "/images/image6.jpg",
-    description: "Nós dois deitados, sorrindo, com Cacau (minha cadela) entre nós dois"
+    description: "Nós dois deitados, sorrindo, com Cacau (minha cadela) entre nós dois",
+    tags: ["pets", "cacau", "cadela", "cachorro", "animais", "família"]
   },
   {
     id: 7,
@@ -185,7 +187,8 @@ export const photos: Photo[] = [
     id: 31,
     title: "Viagem de Carro com Cacau",
     image: "/images/image31.jpg",
-    description: "Nós dois e Cacau viajando de carro – estrada, risadas e companhia perfeita"
+    description: "Nós dois e Cacau viajando de carro – estrada, risadas e companhia perfeita",
+    tags: ["pets", "cacau", "cadela", "viagem", "carro", "estrada", "família"]
   },
   {
     id: 32,
@@ -215,7 +218,8 @@ export const photos: Photo[] = [
     id: 36,
     title: "Deitados com Cacau no Meio",
     image: "/images/image36.jpg",
-    description: "Nós dois deitados e Cacau enfiada no meio – cena clássica do nosso trio"
+    description: "Nós dois deitados e Cacau enfiada no meio – cena clássica do nosso trio",
+    tags: ["pets", "cacau", "cadela", "trio", "família", "intimidade"]
   },
   {
     id: 37,
@@ -252,6 +256,86 @@ export const photos: Photo[] = [
     title: "Seis Meses de Namoro",
     image: "/images/image42.jpg",
     description: "Nossa comemoração de seis meses de namoro – amor que só cresceu desde então"
+  },
+  {
+    id: 43,
+    title: "Com Henrique e Paloma",
+    image: "/images/image43.jpg",
+    description: "Nós dois com Henrique e Paloma. Henrique é um amigo de infância meu"
+  },
+  {
+    id: 44,
+    title: "Conhecendo Louise",
+    image: "/images/image44.jpg",
+    description: "Nós dois indo à Salvador pela 2ª vez e conhecendo minha sobrinha Louise"
+  },
+  {
+    id: 45,
+    title: "Praia do Forte",
+    image: "/images/image45.jpg",
+    description: "Nós dois e meu pai na Praia do Forte, na Bahia"
+  },
+  {
+    id: 46,
+    title: "Primeiro Jogo do Bahia",
+    image: "/images/image46.jpg",
+    description: "Primeiro jogo do Bahia dela, no estádio Fonte Nova em Salvador, comigo, meu primo, meu pai e meu sobrinho"
+  },
+  {
+    id: 47,
+    title: "Primeiros Encontros",
+    image: "/images/image47.jpg",
+    description: "Um dos primeiros encontros nossos, quando tudo ainda era novidade"
+  },
+  {
+    id: 48,
+    title: "Projeto Tamar",
+    image: "/images/image48.jpg",
+    description: "Nós dois no projeto Tamar, abraçados na frente de uma estátua de tartaruga"
+  },
+  {
+    id: 49,
+    title: "Chapéu Temático",
+    image: "/images/image49.jpg",
+    description: "Ela com um chapéu temático de bichinho no marco das três fronteiras"
+  },
+  {
+    id: 50,
+    title: "Farol da Barra",
+    image: "/images/image50.jpg",
+    description: "Nós dois no Farol da Barra, em Salvador"
+  },
+  {
+    id: 51,
+    title: "Praia de Stella Maris",
+    image: "/images/image51.jpg",
+    description: "Nós dois na Praia de Stella Maris, em Salvador"
+  },
+  {
+    id: 52,
+    title: "Aniversário da Macaca",
+    image: "/images/image52.jpg",
+    description: "Nós dois gargalhando no aniversário da macaca"
+  },
+  {
+    id: 53,
+    title: "Dormindo como a Cacau",
+    image: "/images/image53.jpg",
+    description: "Eu dormindo na mesma posição que Cacau, ao lado dela",
+    tags: ["pets", "cacau", "cadela", "dormindo", "família", "fofo"]
+  },
+  {
+    id: 54,
+    title: "Oktoberfest",
+    image: "/images/image54.jpg",
+    description: "Nós dois na oktoberfest"
+  },
+  {
+    id: 55,
+    title: "Família Completa",
+    image: "/images/image55.jpg",
+    description: "Nós dois, Dante e Cacau – nossa família completa",
+    tags: ["pets", "dante", "cacau", "família", "completa", "cachorro", "cadela", "animais"]
   }
 ];
 

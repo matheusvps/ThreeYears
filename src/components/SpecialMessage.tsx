@@ -24,7 +24,7 @@ teu nêgo. 🤍`;
 
 
   return (
-    <div className="w-full px-4 mb-4">
+    <div className="w-full px-4 mb-4 mt-4">
       <div className="flex w-full h-fit items-center justify-center">
         <AnimatePresence mode="wait">
           {isExpanded ? (

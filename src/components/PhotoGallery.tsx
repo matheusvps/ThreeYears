@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { siteConfig } from '@/config/site';
 import { useSearch } from '@/hooks/useSearch';
@@ -23,6 +23,10 @@ interface PhotoGalleryProps {
 export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurationSec, isPlaying }: PhotoGalleryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   const photos: Photo[] = useMemo(() => sharedPhotos, []);
 
@@ -51,10 +55,8 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
   useEffect(() => {
     if (isPlaying && totalDurationSec > 0 && !isSearching) {
       const totalPhotos = displayPhotos.length;
-      const clampedGlobal = Math.max(0, Math.min(globalTimeSec, totalDurationSec));
-      const photoIndex = Math.floor((clampedGlobal / totalDurationSec) * totalPhotos);
       
-      // Trocar foto a cada 30 segundos (42 fotos em ~20 minutos)
+      // Trocar foto a cada 30 segundos (55 fotos em ~27 minutos)
       const timeBasedIndex = Math.floor(globalTimeSec / 30) % totalPhotos;
       
       // Usar timeBasedIndex para troca baseada em tempo
@@ -85,6 +87,49 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
       link.click();
     }
   }, [displayPhotos, currentPhotoIndex]);
+
+  // Funções para drag horizontal
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Velocidade do scroll
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  }, [isDragging, startX, scrollLeft]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Touch events para dispositivos móveis
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    const x = e.touches[0].pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  }, [isDragging, startX, scrollLeft]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
 
   return (
     <>
@@ -124,17 +169,40 @@ export function PhotoGallery({ isMuted, onToggleMute, globalTimeSec, totalDurati
 
         {/* Tabs rápidas de temas (sugestões clicáveis) */}
         <div className="mb-6">
-          <div className="flex space-x-2 overflow-x-auto">
-            {['Viagem', 'Família', 'Casa', 'Pets', 'Romance', 'Celebração'].map((tag) => (
+          <div 
+            ref={scrollContainerRef}
+            className={`flex space-x-2 overflow-x-auto scrollbar-hide ${
+              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
+            style={{ 
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {['Viagem', 'Família', 'Casa', 'Pets', 'Romance', 'Celebração', 'Bahia', 'Salvador', 'Foz do Iguaçu', 'Chalé', 'Fogueira', 'Academia', 'Futebol', 'Praia', 'Restaurante'].map((tag) => (
               <motion.button
                 key={tag}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => {
+                onClick={(e) => {
+                  // Previne o clique se estivermos arrastando
+                  if (isDragging) {
+                    e.preventDefault();
+                    return;
+                  }
                   setSearchQuery(tag.toLowerCase());
                   startSearch();
                 }}
-                className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap"
+                className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap select-none"
+                style={{ userSelect: 'none' }}
               >
                 {tag}
               </motion.button>
